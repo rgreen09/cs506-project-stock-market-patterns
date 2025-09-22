@@ -1,81 +1,60 @@
-# CS506 Project: Stock Market Pattern Recognition
+# 📈 CS506 Project: Stock Market Pattern Recognition
 
-## 1. Description of the Project
+## 1. Project Overview
 
-This project aims to address a fundamental challenge in technical analysis: the **labor-intensive and subjective nature of identifying chart patterns**. By developing a machine learning model, we will create an automated, scalable, and objective solution for recognizing major price formations in stock data. 
+This project addresses a core challenge in technical analysis: the **subjective and time-intensive nature of recognizing chart patterns**. Traders often rely on manual inspection to identify formations that may indicate either a continuation or a reversal of the current price trend. This process is not only inefficient but also highly inconsistent between analysts.
 
-### Core Function
-The model's core function is to analyze historical and real-time stock data to recognize specific chart formations that have historically signaled either:
-- A **continuation** of the current price trend, or
-- A **reversal** of the current price trend
+Our solution is to build a **machine learning model** that automatically detects these patterns from stock market data. By combining programmatic labeling with supervised learning, the model provides a scalable, consistent, and objective tool for technical analysis.
 
-### Target Patterns
-The project will focus on identifying a core set of reliable and common chart patterns, including:
-
-**Reversal Patterns:**
-- Head and Shoulders
-- Double Top/Bottom
-
-**Continuation Patterns:**
-- Triangles
-- Flags/Pennants
-
-### Value Proposition
-This automated approach provides a powerful and efficient resource that can be integrated into a larger algorithmic trading framework, democratizing access to sophisticated technical analysis. The output of this model will not be a direct trading signal but a clear indication of a recognized pattern's presence, which can then be used to inform subsequent trading decisions.
+Importantly, this system does not produce direct trading signals. Instead, it generates **flags** or **probabilistic scores** indicating whether a specific chart formation is present. These outputs can then be integrated into larger algorithmic trading frameworks or used as decision-support tools by traders.
 
 ---
 
-## 2. Clear Goals
+## 2. Goals and Objectives
 
-The **primary goal** is to develop a machine learning model that can accurately identify major chart patterns from historical stock data using an algorithmic labeling method.
+The **primary goal** of this project is to create a machine learning model that can accurately identify key stock chart patterns from historical OHLCV data.
 
-### Specific Objectives
+To achieve this, we set the following objectives:
 
-**Algorithmic Labeling:** Develop a program to algorithmically identify and label chart patterns, creating a large, labeled dataset for model training and validation.
-
-**Model Development:** Design, train, and test a predictive model capable of recognizing the defined set of chart patterns with a high degree of accuracy.
-
-**Pattern Identification:** Create a final model that can take new stock data and output a clear indication of which, if any, of the target patterns are present.
-
-**Proof of Concept:** Demonstrate how the model's pattern identification can be used to inform a simple, rule-based trading strategy through backtesting.
+1. **Algorithmic Labeling**: Develop a rule-based system to automatically identify and label patterns within raw price data. This step provides the labeled dataset necessary for model training.
+2. **Model Development**: Train and evaluate a predictive model capable of detecting the selected chart patterns with high accuracy.
+3. **Pattern Recognition in Practice**: Ensure the final model can analyze new, unseen data and output the detected pattern(s).
+4. **Proof of Concept**: Demonstrate how detected patterns could inform a simple, rule-based trading strategy using historical backtesting.
 
 ---
 
 ## 3. Data Collection and Preparation
 
 ### Data Requirements
-The data required is comprehensive, historical stock data consisting of time-series records of **Open, High, Low, Close, and Volume (OHLCV)** values.
+
+The project relies on **historical stock market data** with the following attributes:
+
+- **Open, High, Low, Close, and Volume (OHLCV)** values  
+- Coverage across multiple equities  
+- At least **five years** of data to ensure enough examples of the target patterns  
 
 ### Data Sources
-The data will be collected programmatically from a reliable financial data API, such as:
-- Alpha Vantage
-- Finnhub
-- Python library like yfinance
 
-This will gather a diverse set of stocks over a period of **at least five years**.
+Data will be collected programmatically from reliable APIs, such as:
 
-### Processing Pipeline
-Once the raw data is collected, a custom Python script will be used to perform algorithmic labeling. This script will systematically analyze the OHLCV data for each stock, applying a series of rules to find key price points and identify instances of the target chart patterns.
+- [Alpha Vantage](https://www.alphavantage.co/)  
+- [Finnhub](https://finnhub.io/)  
+- [`yfinance`](https://pypi.org/project/yfinance/) (Python library for Yahoo Finance data)  
 
-### Algorithmic Labeling Examples
+### Algorithmic Labeling
 
-To demonstrate how the labeling script would work, here is an example of the rules it would follow:
+One of the most important parts of this project is **algorithmic labeling**. Since supervised machine learning requires large labeled datasets, we need a way to label chart patterns **without manual annotation**. Our approach is to design a **rule-based labeling pipeline** that systematically scans through OHLCV data and identifies instances of specific patterns based on well-defined criteria.
 
-#### Double Top Pattern
+The process works as follows:
 
-The script would look for a bearish reversal pattern using the following logic:
+1. **Identify Local Extrema**: The algorithm first detects local maxima (peaks) and minima (troughs) within the price series.
+2. **Apply Pattern-Specific Rules**: Each pattern has strict rules for recognition (e.g., relative height of peaks, separation distance, breakout confirmation).
+3. **Assign Labels**: When a formation matches all conditions for a pattern, the algorithm labels that sequence accordingly.
+4. **Validate and Store**: Confirmed patterns are stored in the dataset along with metadata, such as time range and stock symbol.
 
-```
-1. Find Peaks: Identify two distinct, recent peaks (local maxima) that are of similar height. 
-   The peaks must be separated by a significant trough (a local minimum).
+This systematic method ensures that the model is trained on data labeled consistently and objectively.
 
-2. Check Peak Heights: The two peaks must be within a predefined percentage (e.g., 2%) 
-   of each other's height.
+### Example: Double Top (Bearish Reversal)
 
-3. Identify the Neckline: The neckline is defined as the lowest point (the trough) 
-   between the two peaks.
-
-4. Confirmation: The algorithm will only label the pattern as a Double Top once the price 
-   breaks decisively below the neckline, confirming the reversal.
-```
+Below is an illustration of how the algorithmic labeling process would detect a **Double Top** pattern:
 
