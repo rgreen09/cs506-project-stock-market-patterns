@@ -142,33 +142,30 @@ These visualizations will help us **verify the quality of our labeling**, **inte
 
 ## 6. Test Plan
 
-To ensure robust evaluation, we will adopt a systematic testing strategy covering data splits, metrics, validation, and stress testing.
+We will evaluate our models using a **time-based split** to prevent data leakage across periods and to better reflect real-world trading deployment.
 
-### 1.Data Splits
-- **Train / Validation / Test split** using time-based partitioning (to prevent leakage across time).  
-- **Rolling window evaluation** to simulate real-world deployment, where models are trained on past data and tested on future unseen data.  
-- **Cross-validation (where feasible)** to confirm robustness across different market regimes.  
+### 1.Data Split Strategy
+- Withhold **20% of the most recent data** as a **test set**.  
+- Use the earlier **80% for training and validation**.  
+- Within the training data, apply a **rolling/temporal validation scheme**:
+  - Example: Train on data from Jan–Mar, validate on Apr; Train on Feb–Apr, validate on May, etc.
 
-### 2.Metrics
-- **Classification Metrics**: Precision, Recall, F1 Score, and PR-AUC (prioritizing performance under class imbalance).  
-- **Secondary Metrics**: Accuracy (for quick comparison) and ROC-AUC.  
+### 2. Alternative Setup (if monthly splits are available)
+- **Train on data collected in October**, **test on data collected in November**.  
+- This ensures the test set always represents **unseen future market conditions**.
+
+### 3. Cross-Validation
+- Perform **rolling window cross-validation** to confirm robustness across different time periods.  
+- This allows us to evaluate stability during bull, bear, and sideways markets.
+
+### 4.Evaluation Metrics
+- **Classification Metrics**: Precision, Recall, F1 Score, PR-AUC (preferred over accuracy due to class imbalance).  
 - **Trading-Oriented Metrics**:  
-  - Hit Rate (% of correct pattern predictions).  
-  - Average and cumulative return from pattern-based signals.  
-  - Sharpe ratio of backtested trading strategies.  
+  - Cumulative return vs. buy-and-hold baseline.  
+  - Hit rate (% of correct pattern predictions).  
+  - Sharpe ratio for risk-adjusted performance.  
 
-### 3. Validation Strategy
-- **Baseline comparisons** against simple heuristics (e.g., random guessing, moving average crossovers).  
-- **Model robustness checks** by evaluating performance across multiple stocks, time periods, and volatility regimes.  
-- **Hyperparameter tuning** using validation set or cross-validation (Grid Search / Bayesian Optimization).  
-
-### 4. Stress Testing
-- Evaluate model stability on **rare patterns** with oversampling or class weighting.  
-- Test performance on **noisy or incomplete data** (simulating real-world market feeds).  
-- Assess **out-of-sample generalization** across different market conditions (bull, bear, sideways).  
-
-This structured test plan ensures our models are **evaluated fairly**, **generalize well across conditions**, and **deliver actionable insights** in real trading contexts.
-
+This testing plan ensures our models are **evaluated fairly, generalize well across time, and remain practical for real-world trading applications**.
 
 ---
 
