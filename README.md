@@ -86,23 +86,55 @@ We will experiment with a progression of models, starting with simple baselines 
 - **1D CNNs / LSTMs** on OHLCV time-series windows to directly learn sequential dependencies and temporal structure in the data.  
 - *(Optional)* **2D CNNs on candlestick chart images**, which allows the model to learn visual representations similar to how human traders interpret charts.  
 
----
+
 
 ### Model Setup
 - Models will be trained as **binary classifiers** for each pattern type.  
 - Alternatively, we may extend to a **multi-label classification** setup, since windows could contain overlapping patterns.  
 
----
+
 
 ### Handling Class Imbalance
 - Use **class weights**, **oversampling techniques**, or **focal loss** (for deep learning models).  
 - Emphasize **precision and recall** rather than raw accuracy.  
 
----
+
 
 ### Evaluation
 - Compare baseline, boosting, and deep learning models using **Precision, Recall, F1 score, and PR-AUC**.  
 - Select the **best-performing approach** for final deployment.
+
+```
+```
+## 5. How We Plan on Visualizing the Data
+
+Visualization is critical for both exploring the dataset and communicating model results. We will use a mix of **exploratory visualizations**, **diagnostic plots**, and **interactive dashboards**.
+
+1.### Exploratory Data Visualization (EDA)
+- **Candlestick charts with overlays** of detected patterns (e.g., highlight Double Tops with neckline drawn).  
+- **Local extrema plots** showing peaks and troughs used by the labeling algorithm.  
+- **Distribution plots** of pattern frequency across stocks, time periods, and market conditions.  
+
+2.### Feature Visualization
+- **Scatter plots** of key features (e.g., peak height ratio vs. neckline slope) colored by pattern type.  
+- **Correlation heatmaps** of engineered features to understand redundancy.  
+- **Time-series plots** of technical indicators (e.g., moving averages, RSI) to illustrate feature behavior near patterns.  
+
+3.### Model Diagnostic Visualizations
+- **Confusion matrices** for each pattern classifier.  
+- **Precision-Recall and ROC curves** to evaluate performance under class imbalance.  
+- **Feature importance plots** (for tree-based models like XGBoost/LightGBM).  
+- **t-SNE / UMAP embeddings** of learned feature spaces to visualize how patterns cluster.  
+
+4.### Backtesting Results
+- **Equity curve plots** showing cumulative returns of a simple rule-based trading strategy vs. buy-and-hold.  
+- **Trade outcome histograms** (distribution of returns per flagged trade).  
+
+5.### Interactive Visualizations
+- **Plotly dashboards** for zoomable candlestick charts with detected pattern annotations.  
+- **Interactive scatter plots and embeddings** that allow filtering by symbol, date, or pattern type.  
+
+These visualizations will help us **verify the quality of our labeling**, **interpret model decisions**, and **effectively communicate our findings**.
 
 
    
