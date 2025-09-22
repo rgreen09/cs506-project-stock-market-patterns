@@ -150,7 +150,7 @@ We will evaluate our models using a **time-based split** to prevent data leakage
 - Within the training data, apply a **rolling/temporal validation scheme**:
   - Example: Train on data from Jan–Mar, validate on Apr; Train on Feb–Apr, validate on May, etc.
 
-### 2. Alternative Setup (if monthly splits are available)
+### 2. Alternative Setup 
 - **Train on data collected in October**, **test on data collected in November**.  
 - This ensures the test set always represents **unseen future market conditions**.
 
