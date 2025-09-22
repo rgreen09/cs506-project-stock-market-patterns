@@ -57,4 +57,15 @@ This systematic method ensures that the model is trained on data labeled consist
 ### Example: Double Top (Bearish Reversal)
 
 Below is an illustration of how the algorithmic labeling process would detect a **Double Top** pattern:
+```
+a) Find Peaks: Identify two recent local maxima of similar height.
+The peaks must be separated by a significant trough (a local minimum).
 
+b) Check Peak Heights: Verify that the two peaks are within a small
+threshold of each other (e.g., ±2%).
+
+c) Define the Neckline: Mark the trough between the peaks as the neckline.
+
+d) Confirmation: Confirm the Double Top only if the price falls
+decisively below the neckline after the second peak.
+```
