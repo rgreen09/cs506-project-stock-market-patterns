@@ -115,29 +115,61 @@ Visualization is critical for both exploring the dataset and communicating model
 - **Local extrema plots** showing peaks and troughs used by the labeling algorithm.  
 - **Distribution plots** of pattern frequency across stocks, time periods, and market conditions.  
 
-###2. Feature Visualization
+### 2. Feature Visualization
 - **Scatter plots** of key features (e.g., peak height ratio vs. neckline slope) colored by pattern type.  
 - **Correlation heatmaps** of engineered features to understand redundancy.  
 - **Time-series plots** of technical indicators (e.g., moving averages, RSI) to illustrate feature behavior near patterns.  
 
-###3. Model Diagnostic Visualizations
+### 3. Model Diagnostic Visualizations
 - **Confusion matrices** for each pattern classifier.  
 - **Precision-Recall and ROC curves** to evaluate performance under class imbalance.  
 - **Feature importance plots** (for tree-based models like XGBoost/LightGBM).  
 - **t-SNE / UMAP embeddings** of learned feature spaces to visualize how patterns cluster.  
 
-###4. Backtesting Results
+### 4. Backtesting Results
 - **Equity curve plots** showing cumulative returns of a simple rule-based trading strategy vs. buy-and-hold.  
 - **Trade outcome histograms** (distribution of returns per flagged trade).  
 
-###5. Interactive Visualizations
+### 5. Interactive Visualizations
 - **Plotly dashboards** for zoomable candlestick charts with detected pattern annotations.  
 - **Interactive scatter plots and embeddings** that allow filtering by symbol, date, or pattern type.  
 
 These visualizations will help us **verify the quality of our labeling**, **interpret model decisions**, and **effectively communicate our findings**.
-'''
 
-'''
-6.
+---
 
-   
+---
+
+## 6. Test Plan
+
+To ensure robust evaluation, we will adopt a systematic testing strategy covering data splits, metrics, validation, and stress testing.
+
+### 1.Data Splits
+- **Train / Validation / Test split** using time-based partitioning (to prevent leakage across time).  
+- **Rolling window evaluation** to simulate real-world deployment, where models are trained on past data and tested on future unseen data.  
+- **Cross-validation (where feasible)** to confirm robustness across different market regimes.  
+
+### 2.Metrics
+- **Classification Metrics**: Precision, Recall, F1 Score, and PR-AUC (prioritizing performance under class imbalance).  
+- **Secondary Metrics**: Accuracy (for quick comparison) and ROC-AUC.  
+- **Trading-Oriented Metrics**:  
+  - Hit Rate (% of correct pattern predictions).  
+  - Average and cumulative return from pattern-based signals.  
+  - Sharpe ratio of backtested trading strategies.  
+
+### 3. Validation Strategy
+- **Baseline comparisons** against simple heuristics (e.g., random guessing, moving average crossovers).  
+- **Model robustness checks** by evaluating performance across multiple stocks, time periods, and volatility regimes.  
+- **Hyperparameter tuning** using validation set or cross-validation (Grid Search / Bayesian Optimization).  
+
+### 4. Stress Testing
+- Evaluate model stability on **rare patterns** with oversampling or class weighting.  
+- Test performance on **noisy or incomplete data** (simulating real-world market feeds).  
+- Assess **out-of-sample generalization** across different market conditions (bull, bear, sideways).  
+
+This structured test plan ensures our models are **evaluated fairly**, **generalize well across conditions**, and **deliver actionable insights** in real trading contexts.
+
+
+---
+
+---
