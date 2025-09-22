@@ -71,26 +71,38 @@ decisively below the neckline after the second peak.
 ```
 
 ## 4. Modeling the Data
-We will experiment with a progression of models, starting with simple baselines and moving to more advanced methods. The goal is to evaluate which type of model best captures the structural properties of chart patterns.
-1.**Baseline Models (for interpretability and quick benchmarking)**:
-Logistic Regression using a small set of engineered features (e.g., relative peak heights, neckline slope, moving average slopes).
-Decision Trees / Random Forests to capture non-linear relationships in features without requiring deep learning.
-2.**Tree-Based Gradient Boosting Models**:
-XGBoost or LightGBM trained on engineered features such as returns, volume ratios, and structural characteristics of patterns.
-These models are powerful for tabular data, handle imbalanced classes well, and provide feature importance for interpretability.
-3.**Deep Learning Approaches**:
-1D CNNs / LSTMs on OHLCV time-series windows to directly learn sequential dependencies and temporal structure in the data.
-(Optional) 2D CNNs on candlestick chart images, which allows the model to learn visual representations similar to how human traders interpret charts.
 
-### Model Setup:
-We will train models as binary classifiers for each pattern type
-Alternatively, we may extend to a multi-label classification setup, since windows could contain overlapping patterns.
-1. **Handling Class Imbalance**:
-Use class weights, oversampling techniques, or focal loss (for deep learning models).
-Emphasize precision and recall rather than raw accuracy.
-2.**Evaluation**:
-Compare baseline, boosting, and deep learning models using precision, recall, F1 score, and PR-AUC.
-Select the best-performing approach for final deployment.
+We will experiment with a progression of models, starting with simple baselines and moving to more advanced methods. The goal is to evaluate which type of model best captures the structural properties of chart patterns.
+
+### 1. Baseline Models (for interpretability and quick benchmarking)
+- **Logistic Regression** using a small set of engineered features (e.g., relative peak heights, neckline slope, moving average slopes).  
+- **Decision Trees / Random Forests** to capture non-linear relationships in features without requiring deep learning.  
+
+### 2. Tree-Based Gradient Boosting Models
+- **XGBoost or LightGBM** trained on engineered features such as returns, volume ratios, and structural characteristics of patterns.  
+- These models are powerful for tabular data, handle imbalanced classes well, and provide feature importance for interpretability.  
+
+### 3. Deep Learning Approaches
+- **1D CNNs / LSTMs** on OHLCV time-series windows to directly learn sequential dependencies and temporal structure in the data.  
+- *(Optional)* **2D CNNs on candlestick chart images**, which allows the model to learn visual representations similar to how human traders interpret charts.  
+
+---
+
+### Model Setup
+- Models will be trained as **binary classifiers** for each pattern type.  
+- Alternatively, we may extend to a **multi-label classification** setup, since windows could contain overlapping patterns.  
+
+---
+
+### Handling Class Imbalance
+- Use **class weights**, **oversampling techniques**, or **focal loss** (for deep learning models).  
+- Emphasize **precision and recall** rather than raw accuracy.  
+
+---
+
+### Evaluation
+- Compare baseline, boosting, and deep learning models using **Precision, Recall, F1 score, and PR-AUC**.  
+- Select the **best-performing approach** for final deployment.
 
 
    
