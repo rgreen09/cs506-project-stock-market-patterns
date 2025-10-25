@@ -1,5 +1,5 @@
 """
-Detector del patrón Cup and Handle en datos de precios históricos.
+Cup and Handle pattern detector for historical price data.
 """
 
 import numpy as np
@@ -16,7 +16,7 @@ from utils import (
 
 class CupAndHandleDetector:
     """
-    Detector algorítmico del patrón Cup and Handle.
+    Algorithmic detector for the Cup and Handle pattern.
     """
     
     def __init__(self, 
@@ -31,19 +31,19 @@ class CupAndHandleDetector:
                  volume_breakout_threshold=1.2,
                  extrema_order=5):
         """
-        Inicializa el detector con parámetros configurables.
+        Initializes the detector with configurable parameters.
         
         Args:
-            min_cup_duration: Duración mínima de la taza en días
-            max_cup_duration: Duración máxima de la taza en días
-            min_cup_depth: Profundidad mínima de la taza (%)
-            max_cup_depth: Profundidad máxima de la taza (%)
-            peak_similarity_threshold: Diferencia máxima entre picos (%)
-            min_handle_duration: Duración mínima del asa en días
-            max_handle_duration: Duración máxima del asa en días
-            max_handle_depth: Profundidad máxima del asa (%)
-            volume_breakout_threshold: Ratio mínimo de volumen en breakout
-            extrema_order: Ventana para detectar extremos locales
+            min_cup_duration: Minimum cup duration in days
+            max_cup_duration: Maximum cup duration in days
+            min_cup_depth: Minimum cup depth (%)
+            max_cup_depth: Maximum cup depth (%)
+            peak_similarity_threshold: Maximum difference between peaks (%)
+            min_handle_duration: Minimum handle duration in days
+            max_handle_duration: Maximum handle duration in days
+            max_handle_depth: Maximum handle depth (%)
+            volume_breakout_threshold: Minimum volume ratio on breakout
+            extrema_order: Window for detecting local extrema
         """
         self.min_cup_duration = min_cup_duration
         self.max_cup_duration = max_cup_duration
@@ -58,13 +58,13 @@ class CupAndHandleDetector:
     
     def detect_patterns(self, df):
         """
-        Detecta todos los patrones Cup and Handle en un DataFrame.
+        Detects all Cup and Handle patterns in a DataFrame.
         
         Args:
-            df: DataFrame con columnas Date, Open, High, Low, Close, Volume
+            df: DataFrame with columns Date, Open, High, Low, Close, Volume
             
         Returns:
-            Lista de diccionarios con información de cada patrón detectado
+            List of dictionaries with information for each detected pattern
         """
         if len(df) < self.min_cup_duration + self.min_handle_duration + 10:
             return []
@@ -73,44 +73,44 @@ class CupAndHandleDetector:
         volumes = df['Volume'].values
         dates = df['Date'].values
         
-        # Encontrar extremos locales
+        # Find local extrema
         peaks = find_peaks(closes, order=self.extrema_order)
         troughs = find_troughs(closes, order=self.extrema_order)
         
         patterns = []
         
-        # Iterar sobre picos para buscar formaciones de taza
+        # Iterate over peaks to search for cup formations
         for i, peak1_idx in enumerate(peaks):
-            # Buscar valles después de este pico
+            # Search for troughs after this peak
             valid_troughs = troughs[troughs > peak1_idx]
             
             for trough_idx in valid_troughs:
-                # Buscar segundo pico después del valle
+                # Search for second peak after the trough
                 valid_peaks2 = peaks[peaks > trough_idx]
                 
                 for peak2_idx in valid_peaks2:
-                    # Validar la formación de la taza
+                    # Validate the cup formation
                     cup_result = self._validate_cup(
                         closes, peak1_idx, trough_idx, peak2_idx
                     )
                     
                     if cup_result['valid']:
-                        # Buscar el asa después del segundo pico
+                        # Search for the handle after the second peak
                         handle_result = self._find_handle(
                             closes, volumes, peak2_idx, dates
                         )
                         
                         if handle_result['valid']:
-                            # Buscar confirmación de breakout
+                            # Search for breakout confirmation
                             breakout_result = self._check_breakout(
                                 df, peak1_idx, peak2_idx, 
                                 handle_result['handle_end_idx']
                             )
                             
                             if breakout_result['valid']:
-                                # Patrón completo detectado
+                                # Complete pattern detected
                                 pattern = {
-                                    'ticker': None,  # Se asignará desde fuera
+                                    'ticker': None,  # Will be assigned from outside
                                     'pattern_start_date': dates[peak1_idx],
                                     'pattern_end_date': breakout_result['breakout_date'],
                                     'cup_start_date': dates[peak1_idx],
@@ -131,7 +131,7 @@ class CupAndHandleDetector:
     
     def _validate_cup(self, closes, peak1_idx, trough_idx, peak2_idx):
         """
-        Valida si tres puntos forman una taza válida.
+        Validates if three points form a valid cup.
         """
         result = {'valid': False, 'depth': 0}
         
@@ -139,29 +139,29 @@ class CupAndHandleDetector:
         trough_price = closes[trough_idx]
         peak2_price = closes[peak2_idx]
         
-        # 1. Verificar duración
+        # 1. Verify duration
         cup_duration = peak2_idx - peak1_idx
         if not (self.min_cup_duration <= cup_duration <= self.max_cup_duration):
             return result
         
-        # 2. Verificar profundidad
+        # 2. Verify depth
         depth_pct = calculate_depth_percentage(peak1_price, trough_price)
         if not (self.min_cup_depth <= depth_pct <= self.max_cup_depth):
             return result
         
-        # 3. Verificar que los picos sean similares
+        # 3. Verify that peaks are similar
         peak_diff_pct = abs((peak1_price - peak2_price) / peak1_price * 100)
         if peak_diff_pct > self.peak_similarity_threshold:
             return result
         
-        # 4. Verificar forma redondeada
+        # 4. Verify rounded shape
         if not is_rounded_bottom(closes, trough_idx):
             return result
         
-        # 5. Verificar que el valle no esté exactamente en el medio (sería V)
+        # 5. Verify trough is not exactly in the middle (would be V)
         trough_position = (trough_idx - peak1_idx) / cup_duration
         if 0.4 <= trough_position <= 0.6:
-            # El valle está muy centrado, puede ser una V
+            # Trough is too centered, may be a V
             return result
         
         result['valid'] = True
@@ -170,11 +170,11 @@ class CupAndHandleDetector:
     
     def _find_handle(self, closes, volumes, peak2_idx, dates):
         """
-        Encuentra el asa después del segundo pico de la taza.
+        Finds the handle after the second cup peak.
         """
         result = {'valid': False, 'handle_end_idx': None, 'depth': 0}
         
-        # Buscar dentro de una ventana después del pico
+        # Search within a window after the peak
         search_end = min(
             peak2_idx + self.max_handle_duration + 10,
             len(closes)
@@ -186,17 +186,17 @@ class CupAndHandleDetector:
         handle_segment = closes[peak2_idx:search_end]
         peak2_price = closes[peak2_idx]
         
-        # Encontrar el mínimo en este segmento
+        # Find the minimum in this segment
         handle_low_rel_idx = np.argmin(handle_segment)
         handle_low_idx = peak2_idx + handle_low_rel_idx
         handle_low_price = closes[handle_low_idx]
         
-        # Verificar profundidad del asa
+        # Verify handle depth
         handle_depth = calculate_depth_percentage(peak2_price, handle_low_price)
         if handle_depth > self.max_handle_depth:
             return result
         
-        # Verificar duración del asa
+        # Verify handle duration
         handle_duration = handle_low_idx - peak2_idx
         if not (self.min_handle_duration <= handle_duration <= self.max_handle_duration):
             return result
@@ -208,21 +208,21 @@ class CupAndHandleDetector:
     
     def _check_breakout(self, df, peak1_idx, peak2_idx, handle_end_idx):
         """
-        Verifica si hay un breakout confirmado después del asa.
+        Verifies if there's a confirmed breakout after the handle.
         """
         result = {'valid': False, 'breakout_date': None, 'breakout_price': 0}
         
-        # Determinar el nivel de resistencia
+        # Determine resistance level
         resistance_level = max(df['Close'].iloc[peak1_idx], df['Close'].iloc[peak2_idx])
         
-        # Buscar breakout en los días siguientes al asa
+        # Search for breakout in the days following the handle
         search_start = handle_end_idx + 1
         search_end = min(handle_end_idx + 15, len(df))
         
         if search_start >= len(df):
             return result
         
-        # Calcular volumen promedio de los últimos 20 días antes del breakout
+        # Calculate average volume of last 20 days before breakout
         vol_start = max(0, handle_end_idx - 20)
         avg_volume = df['Volume'].iloc[vol_start:handle_end_idx].mean()
         
@@ -230,9 +230,9 @@ class CupAndHandleDetector:
             close_price = df['Close'].iloc[idx]
             volume = df['Volume'].iloc[idx]
             
-            # Verificar si el precio rompe la resistencia
-            if close_price > resistance_level * 1.01:  # 1% por encima
-                # Verificar volumen
+            # Verify if price breaks resistance
+            if close_price > resistance_level * 1.01:  # 1% above
+                # Verify volume
                 vol_ratio = calculate_volume_ratio(volume, avg_volume)
                 
                 if vol_ratio >= self.volume_breakout_threshold:
@@ -245,13 +245,13 @@ class CupAndHandleDetector:
     
     def _calculate_confidence(self, cup_result, handle_result, breakout_result):
         """
-        Calcula un score de confianza para el patrón detectado.
+        Calculates a confidence score for the detected pattern.
         
-        Basado en qué tan bien se ajusta a los parámetros ideales.
+        Based on how well it fits the ideal parameters.
         """
         score = 0.0
         
-        # Cup depth ideal: 20-25%
+        # Ideal cup depth: 20-25%
         cup_depth = cup_result['depth']
         if 20 <= cup_depth <= 25:
             score += 0.3
@@ -260,7 +260,7 @@ class CupAndHandleDetector:
         else:
             score += 0.1
         
-        # Handle depth ideal: 5-10%
+        # Ideal handle depth: 5-10%
         handle_depth = handle_result['depth']
         if 5 <= handle_depth <= 10:
             score += 0.3
@@ -269,30 +269,29 @@ class CupAndHandleDetector:
         else:
             score += 0.1
         
-        # Breakout con buen volumen
-        score += 0.4  # Si llegó hasta aquí, el breakout fue válido
+        # Breakout with good volume
+        score += 0.4  # If it got here, breakout was valid
         
         return round(score, 2)
 
 
 def detect_cup_and_handle(ticker, df, **kwargs):
     """
-    Función auxiliar para detectar patrones en un ticker específico.
+    Helper function to detect patterns for a specific ticker.
     
     Args:
-        ticker: Símbolo de la acción
-        df: DataFrame con datos históricos
-        **kwargs: Parámetros opcionales para el detector
+        ticker: Stock symbol
+        df: DataFrame with historical data
+        **kwargs: Optional parameters for the detector
         
     Returns:
-        Lista de patrones detectados
+        List of detected patterns
     """
     detector = CupAndHandleDetector(**kwargs)
     patterns = detector.detect_patterns(df)
     
-    # Asignar el ticker a cada patrón
+    # Assign ticker to each pattern
     for pattern in patterns:
         pattern['ticker'] = ticker
     
     return patterns
-

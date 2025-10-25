@@ -1,5 +1,5 @@
 """
-Módulo para visualizar patrones Cup and Handle detectados.
+Module for visualizing detected Cup and Handle patterns.
 """
 
 import matplotlib.pyplot as plt
@@ -11,52 +11,52 @@ from datetime import datetime, timedelta
 
 def plot_cup_and_handle(df, pattern, save_path=None):
     """
-    Genera un gráfico de candlestick mostrando el patrón detectado.
+    Generates a candlestick chart showing the detected pattern.
     
     Args:
-        df: DataFrame con datos OHLCV
-        pattern: Diccionario con información del patrón
-        save_path: Ruta donde guardar la imagen (None para mostrar)
+        df: DataFrame with OHLCV data
+        pattern: Dictionary with pattern information
+        save_path: Path to save the image (None to display)
     """
-    # Extraer fechas del patrón
+    # Extract pattern dates
     pattern_start = pd.to_datetime(pattern['pattern_start_date'])
     pattern_end = pd.to_datetime(pattern['breakout_date'])
     
-    # Añadir margen para visualización
+    # Add margin for visualization
     margin = timedelta(days=10)
     start_date = pattern_start - margin
     end_date = pattern_end + margin
     
-    # Filtrar datos para el rango
+    # Filter data for the range
     df['Date'] = pd.to_datetime(df['Date'])
     mask = (df['Date'] >= start_date) & (df['Date'] <= end_date)
     plot_df = df.loc[mask].copy()
     
     if plot_df.empty:
-        print(f"⚠️  No hay datos para visualizar el patrón de {pattern['ticker']}")
+        print(f"⚠️  No data to visualize pattern for {pattern['ticker']}")
         return
     
-    # Preparar datos para mplfinance
+    # Prepare data for mplfinance
     plot_df.set_index('Date', inplace=True)
     
-    # Crear marcadores para las fases del patrón
+    # Create markers for pattern phases
     cup_start = pd.to_datetime(pattern['cup_start_date'])
     cup_end = pd.to_datetime(pattern['cup_end_date'])
     handle_start = pd.to_datetime(pattern['handle_start_date'])
     handle_end = pd.to_datetime(pattern['handle_end_date'])
     breakout = pd.to_datetime(pattern['breakout_date'])
     
-    # Crear líneas de anotación
+    # Create annotation lines
     addplot_lines = []
     
-    # Línea horizontal para el nivel de resistencia
+    # Horizontal line for resistance level
     resistance_price = pattern['breakout_price'] * 0.99
     resistance_line = [resistance_price] * len(plot_df)
     addplot_lines.append(
         mpf.make_addplot(resistance_line, color='red', linestyle='--', width=1.5)
     )
     
-    # Configurar estilo
+    # Configure style
     mc = mpf.make_marketcolors(
         up='green', down='red',
         edge='inherit',
@@ -65,23 +65,23 @@ def plot_cup_and_handle(df, pattern, save_path=None):
     )
     s = mpf.make_mpf_style(marketcolors=mc, gridstyle='--', y_on_right=False)
     
-    # Crear el gráfico
+    # Create the chart
     fig, axes = mpf.plot(
         plot_df,
         type='candle',
         style=s,
-        title=f"{pattern['ticker']} - Cup and Handle (Confianza: {pattern['confidence_score']})",
-        ylabel='Precio ($)',
+        title=f"{pattern['ticker']} - Cup and Handle (Confidence: {pattern['confidence_score']})",
+        ylabel='Price ($)',
         volume=True,
         addplot=addplot_lines if addplot_lines else None,
         returnfig=True,
         figsize=(14, 8)
     )
     
-    # Añadir anotaciones de texto
+    # Add text annotations
     ax = axes[0]
     
-    # Anotar fases
+    # Annotate phases
     y_pos = plot_df['High'].max() * 1.05
     
     if cup_start in plot_df.index:
@@ -99,7 +99,7 @@ def plot_cup_and_handle(df, pattern, save_path=None):
         ax.text(breakout, y_pos, 'Breakout', fontsize=10, color='green',
                 rotation=45, ha='right', weight='bold')
     
-    # Información adicional
+    # Additional information
     info_text = (
         f"Cup Depth: {pattern['cup_depth_pct']:.1f}%\n"
         f"Handle Depth: {pattern['handle_depth_pct']:.1f}%\n"
@@ -117,7 +117,7 @@ def plot_cup_and_handle(df, pattern, save_path=None):
     
     if save_path:
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
-        print(f"✅ Gráfico guardado en {save_path}")
+        print(f"✅ Chart saved to {save_path}")
         plt.close()
     else:
         plt.show()
@@ -125,112 +125,111 @@ def plot_cup_and_handle(df, pattern, save_path=None):
 
 def generate_visualizations(stock_data, patterns, output_dir, max_plots=10):
     """
-    Genera visualizaciones para múltiples patrones detectados.
+    Generates visualizations for multiple detected patterns.
     
     Args:
-        stock_data: Diccionario {ticker: DataFrame} con datos históricos
-        patterns: Lista de patrones detectados
-        output_dir: Directorio donde guardar las imágenes
-        max_plots: Número máximo de gráficos a generar
+        stock_data: Dictionary {ticker: DataFrame} with historical data
+        patterns: List of detected patterns
+        output_dir: Directory to save images
+        max_plots: Maximum number of charts to generate
     """
     import os
     
     if not patterns:
-        print("⚠️  No hay patrones para visualizar")
+        print("⚠️  No patterns to visualize")
         return
     
     os.makedirs(output_dir, exist_ok=True)
     
-    # Ordenar patrones por confianza
+    # Sort patterns by confidence
     sorted_patterns = sorted(patterns, key=lambda x: x['confidence_score'], reverse=True)
     
-    # Limitar al número máximo
+    # Limit to maximum number
     patterns_to_plot = sorted_patterns[:max_plots]
     
-    print(f"\n📊 Generando visualizaciones ({len(patterns_to_plot)} patrones)...")
+    print(f"\n📊 Generating visualizations ({len(patterns_to_plot)} patterns)...")
     
     for i, pattern in enumerate(patterns_to_plot, 1):
         ticker = pattern['ticker']
         
         if ticker not in stock_data:
-            print(f"⚠️  No hay datos para {ticker}")
+            print(f"⚠️  No data for {ticker}")
             continue
         
         df = stock_data[ticker]
         
-        # Nombre del archivo
+        # Filename
         date_str = pd.to_datetime(pattern['breakout_date']).strftime('%Y%m%d')
         filename = f"{ticker}_{date_str}_cup_and_handle.png"
         save_path = os.path.join(output_dir, filename)
         
-        print(f"[{i}/{len(patterns_to_plot)}] Graficando {ticker}...", end=' ')
+        print(f"[{i}/{len(patterns_to_plot)}] Plotting {ticker}...", end=' ')
         
         try:
             plot_cup_and_handle(df, pattern, save_path)
         except Exception as e:
             print(f"❌ Error: {e}")
     
-    print(f"\n✅ Visualizaciones completadas en {output_dir}")
+    print(f"\n✅ Visualizations completed in {output_dir}")
 
 
 def create_summary_plot(patterns, save_path=None):
     """
-    Crea un gráfico de resumen con estadísticas de los patrones detectados.
+    Creates a summary chart with pattern statistics.
     
     Args:
-        patterns: Lista de patrones
-        save_path: Ruta para guardar (None para mostrar)
+        patterns: List of patterns
+        save_path: Path to save (None to display)
     """
     if not patterns:
-        print("No hay patrones para resumir")
+        print("No patterns to summarize")
         return
     
     df = pd.DataFrame(patterns)
     
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-    fig.suptitle('Resumen de Patrones Cup and Handle Detectados', fontsize=16, weight='bold')
+    fig.suptitle('Cup and Handle Pattern Detection Summary', fontsize=16, weight='bold')
     
-    # 1. Distribución de profundidades de taza
+    # 1. Cup depth distribution
     axes[0, 0].hist(df['cup_depth_pct'], bins=15, color='steelblue', edgecolor='black', alpha=0.7)
-    axes[0, 0].set_xlabel('Profundidad de la Taza (%)')
-    axes[0, 0].set_ylabel('Frecuencia')
-    axes[0, 0].set_title('Distribución: Profundidad de Taza')
+    axes[0, 0].set_xlabel('Cup Depth (%)')
+    axes[0, 0].set_ylabel('Frequency')
+    axes[0, 0].set_title('Distribution: Cup Depth')
     axes[0, 0].axvline(df['cup_depth_pct'].mean(), color='red', linestyle='--', 
-                       label=f'Media: {df["cup_depth_pct"].mean():.1f}%')
+                       label=f'Mean: {df["cup_depth_pct"].mean():.1f}%')
     axes[0, 0].legend()
     
-    # 2. Distribución de profundidades de asa
+    # 2. Handle depth distribution
     axes[0, 1].hist(df['handle_depth_pct'], bins=15, color='coral', edgecolor='black', alpha=0.7)
-    axes[0, 1].set_xlabel('Profundidad del Asa (%)')
-    axes[0, 1].set_ylabel('Frecuencia')
-    axes[0, 1].set_title('Distribución: Profundidad de Asa')
+    axes[0, 1].set_xlabel('Handle Depth (%)')
+    axes[0, 1].set_ylabel('Frequency')
+    axes[0, 1].set_title('Distribution: Handle Depth')
     axes[0, 1].axvline(df['handle_depth_pct'].mean(), color='red', linestyle='--',
-                       label=f'Media: {df["handle_depth_pct"].mean():.1f}%')
+                       label=f'Mean: {df["handle_depth_pct"].mean():.1f}%')
     axes[0, 1].legend()
     
-    # 3. Distribución de scores de confianza
+    # 3. Confidence score distribution
     axes[1, 0].hist(df['confidence_score'], bins=10, color='green', edgecolor='black', alpha=0.7)
-    axes[1, 0].set_xlabel('Score de Confianza')
-    axes[1, 0].set_ylabel('Frecuencia')
-    axes[1, 0].set_title('Distribución: Confianza de Detección')
+    axes[1, 0].set_xlabel('Confidence Score')
+    axes[1, 0].set_ylabel('Frequency')
+    axes[1, 0].set_title('Distribution: Detection Confidence')
     axes[1, 0].axvline(df['confidence_score'].mean(), color='red', linestyle='--',
-                       label=f'Media: {df["confidence_score"].mean():.2f}')
+                       label=f'Mean: {df["confidence_score"].mean():.2f}')
     axes[1, 0].legend()
     
-    # 4. Top 10 acciones con más patrones
+    # 4. Top 10 stocks with most patterns
     ticker_counts = df['ticker'].value_counts().head(10)
     axes[1, 1].barh(ticker_counts.index, ticker_counts.values, color='purple', alpha=0.7)
-    axes[1, 1].set_xlabel('Número de Patrones')
+    axes[1, 1].set_xlabel('Number of Patterns')
     axes[1, 1].set_ylabel('Ticker')
-    axes[1, 1].set_title('Top 10 Acciones con Más Patrones')
+    axes[1, 1].set_title('Top 10 Stocks with Most Patterns')
     axes[1, 1].invert_yaxis()
     
     plt.tight_layout()
     
     if save_path:
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
-        print(f"✅ Resumen guardado en {save_path}")
+        print(f"✅ Summary saved to {save_path}")
         plt.close()
     else:
         plt.show()
-

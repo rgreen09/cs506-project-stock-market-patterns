@@ -1,5 +1,5 @@
 """
-Módulo para obtener datos históricos de acciones usando yfinance.
+Module for fetching historical stock data using yfinance.
 """
 
 import yfinance as yf
@@ -10,13 +10,13 @@ import time
 
 def get_sp500_tickers(limit=None):
     """
-    Obtiene la lista de tickers del S&P 500 desde Wikipedia.
+    Gets the list of S&P 500 tickers from Wikipedia.
     
     Args:
-        limit: Número máximo de tickers a devolver (None para todos)
+        limit: Maximum number of tickers to return (None for all)
         
     Returns:
-        Lista de tickers
+        List of tickers
     """
     try:
         url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'
@@ -24,7 +24,7 @@ def get_sp500_tickers(limit=None):
         sp500_table = tables[0]
         tickers = sp500_table['Symbol'].tolist()
         
-        # Limpiar tickers (algunos tienen caracteres especiales)
+        # Clean tickers (some have special characters)
         tickers = [ticker.replace('.', '-') for ticker in tickers]
         
         if limit:
@@ -32,8 +32,8 @@ def get_sp500_tickers(limit=None):
             
         return tickers
     except Exception as e:
-        print(f"Error obteniendo tickers del S&P 500: {e}")
-        # Fallback: lista estática de tickers populares
+        print(f"Error fetching S&P 500 tickers: {e}")
+        # Fallback: static list of popular tickers
         fallback = [
             'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'BRK-B',
             'JPM', 'JNJ', 'V', 'PG', 'UNH', 'MA', 'HD', 'DIS', 'BAC', 'XOM',
@@ -49,17 +49,17 @@ def get_sp500_tickers(limit=None):
 
 def fetch_stock_data(ticker, start_date=None, end_date=None, period='10y'):
     """
-    Descarga datos históricos de una acción.
+    Downloads historical data for a stock.
     
     Args:
-        ticker: Símbolo de la acción
-        start_date: Fecha inicial (formato YYYY-MM-DD) o None
-        end_date: Fecha final (formato YYYY-MM-DD) o None
-        period: Período de tiempo si no se especifican fechas ('10y', '5y', etc.)
+        ticker: Stock symbol
+        start_date: Start date (YYYY-MM-DD format) or None
+        end_date: End date (YYYY-MM-DD format) or None
+        period: Time period if dates not specified ('10y', '5y', etc.)
         
     Returns:
-        DataFrame con columnas: Date, Open, High, Low, Close, Volume
-        o None si hay error
+        DataFrame with columns: Date, Open, High, Low, Close, Volume
+        or None if error
     """
     try:
         stock = yf.Ticker(ticker)
@@ -70,43 +70,43 @@ def fetch_stock_data(ticker, start_date=None, end_date=None, period='10y'):
             df = stock.history(period=period)
         
         if df.empty:
-            print(f"⚠️  No hay datos para {ticker}")
+            print(f"⚠️  No data available for {ticker}")
             return None
         
-        # Resetear índice para tener Date como columna
+        # Reset index to have Date as a column
         df.reset_index(inplace=True)
         
-        # Seleccionar solo las columnas necesarias
+        # Select only necessary columns
         df = df[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']]
         
         return df
         
     except Exception as e:
-        print(f"❌ Error descargando {ticker}: {e}")
+        print(f"❌ Error downloading {ticker}: {e}")
         return None
 
 
 def fetch_multiple_stocks(tickers, start_date=None, end_date=None, period='10y', delay=0.5):
     """
-    Descarga datos para múltiples acciones con manejo de errores.
+    Downloads data for multiple stocks with error handling.
     
     Args:
-        tickers: Lista de símbolos
-        start_date: Fecha inicial
-        end_date: Fecha final
-        period: Período si no se especifican fechas
-        delay: Segundos de espera entre peticiones
+        tickers: List of symbols
+        start_date: Start date
+        end_date: End date
+        period: Period if dates not specified
+        delay: Seconds to wait between requests
         
     Returns:
-        Diccionario {ticker: DataFrame}
+        Dictionary {ticker: DataFrame}
     """
     data_dict = {}
     total = len(tickers)
     
-    print(f"📊 Descargando datos de {total} acciones...")
+    print(f"📊 Downloading data for {total} stocks...")
     
     for i, ticker in enumerate(tickers, 1):
-        print(f"[{i}/{total}] Procesando {ticker}...", end=' ')
+        print(f"[{i}/{total}] Processing {ticker}...", end=' ')
         
         df = fetch_stock_data(ticker, start_date, end_date, period)
         
@@ -116,26 +116,25 @@ def fetch_multiple_stocks(tickers, start_date=None, end_date=None, period='10y',
         else:
             print("✗")
         
-        # Pequeña pausa para no saturar la API
+        # Small pause to avoid saturating the API
         if i < total:
             time.sleep(delay)
     
-    print(f"\n✅ Datos obtenidos para {len(data_dict)}/{total} acciones")
+    print(f"\n✅ Data obtained for {len(data_dict)}/{total} stocks")
     return data_dict
 
 
 def get_date_range(years_back=10):
     """
-    Calcula el rango de fechas para descargar datos.
+    Calculates the date range for downloading data.
     
     Args:
-        years_back: Años hacia atrás desde hoy
+        years_back: Years back from today
         
     Returns:
-        Tupla (start_date, end_date) en formato YYYY-MM-DD
+        Tuple (start_date, end_date) in YYYY-MM-DD format
     """
     end_date = datetime.now()
     start_date = end_date - timedelta(days=years_back * 365)
     
     return start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')
-

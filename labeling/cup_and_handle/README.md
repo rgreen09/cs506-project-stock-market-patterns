@@ -1,78 +1,78 @@
 # Cup and Handle Pattern Detector
 
-Detector algorítmico del patrón **Cup and Handle** (Taza con Asa) para acciones del S&P 500.
+Algorithmic detector for the **Cup and Handle** pattern in S&P 500 stocks.
 
-## 📋 Descripción
+## 📋 Description
 
-Este módulo implementa un sistema de etiquetado algorítmico para identificar el patrón técnico "Cup and Handle" en datos históricos de acciones. El patrón consiste en:
+This module implements an algorithmic labeling system to identify the "Cup and Handle" technical pattern in historical stock data. The pattern consists of:
 
-1. **Cup (Taza)**: Una formación en forma de U que representa una consolidación
-2. **Handle (Asa)**: Una pequeña corrección descendente después de la taza
-3. **Breakout**: Una ruptura alcista confirmada con volumen
+1. **Cup**: A U-shaped formation representing consolidation
+2. **Handle**: A small downward correction after the cup
+3. **Breakout**: A confirmed upward breakout with volume
 
-## 🔧 Instalación
+## 🔧 Installation
 
 ```bash
-# Instalar dependencias
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-## 🚀 Uso
+## 🚀 Usage
 
-### Uso Básico
+### Basic Usage
 
 ```bash
-# Analizar 50 acciones del S&P 500
+# Analyze 50 S&P 500 stocks
 python main.py --tickers 50
 
-# Analizar 100 acciones
+# Analyze 100 stocks
 python main.py --tickers 100
 
-# Especificar archivo de salida personalizado
+# Specify custom output file
 python main.py --tickers 50 --output ../../data/labeled/my_patterns.csv
 ```
 
-### Con Visualizaciones
+### With Visualizations
 
 ```bash
-# Generar gráficos de los mejores patrones detectados
+# Generate charts of best detected patterns
 python main.py --tickers 50 --visualize --max-plots 15
 
-# Especificar directorio para visualizaciones
+# Specify visualization directory
 python main.py --tickers 100 --visualize --viz-dir ../../data/my_charts
 ```
 
-### Opciones Disponibles
+### Available Options
 
-| Opción | Descripción | Default |
+| Option | Description | Default |
 |--------|-------------|---------|
-| `--tickers` | Número de acciones a analizar | 50 |
-| `--output` | Ruta del archivo CSV de salida | `../../data/labeled/cup_and_handle_labels.csv` |
-| `--visualize` | Generar gráficos de los patrones | False |
-| `--max-plots` | Número máximo de gráficos | 10 |
-| `--viz-dir` | Directorio para visualizaciones | `../../data/visualizations` |
-| `--period` | Período de datos históricos | 10y |
+| `--tickers` | Number of stocks to analyze | 50 |
+| `--output` | Output CSV file path | `../../data/labeled/cup_and_handle_labels.csv` |
+| `--visualize` | Generate pattern charts | False |
+| `--max-plots` | Maximum number of charts | 10 |
+| `--viz-dir` | Directory for visualizations | `../../data/visualizations` |
+| `--period` | Historical data period | 10y |
 
-## 📊 Formato de Salida
+## 📊 Output Format
 
-El script genera un archivo CSV con las siguientes columnas:
+The script generates a CSV file with the following columns:
 
-| Columna | Descripción |
+| Column | Description |
 |---------|-------------|
-| `ticker` | Símbolo de la acción |
-| `pattern_start_date` | Inicio del patrón completo |
-| `pattern_end_date` | Fecha del breakout |
-| `cup_start_date` | Inicio de la taza (primer pico) |
-| `cup_end_date` | Fin de la taza (segundo pico) |
-| `handle_start_date` | Inicio del asa |
-| `handle_end_date` | Fin del asa (mínimo del asa) |
-| `breakout_date` | Fecha de confirmación del breakout |
-| `cup_depth_pct` | Profundidad de la taza (%) |
-| `handle_depth_pct` | Profundidad del asa (%) |
-| `breakout_price` | Precio en el breakout |
-| `confidence_score` | Score de confianza (0-1) |
+| `ticker` | Stock symbol |
+| `pattern_start_date` | Complete pattern start |
+| `pattern_end_date` | Breakout date |
+| `cup_start_date` | Cup start (first peak) |
+| `cup_end_date` | Cup end (second peak) |
+| `handle_start_date` | Handle start |
+| `handle_end_date` | Handle end (handle low) |
+| `breakout_date` | Breakout confirmation date |
+| `cup_depth_pct` | Cup depth (%) |
+| `handle_depth_pct` | Handle depth (%) |
+| `breakout_price` | Breakout price |
+| `confidence_score` | Confidence score (0-1) |
 
-### Ejemplo de Salida
+### Output Example
 
 ```csv
 ticker,pattern_start_date,pattern_end_date,cup_start_date,cup_end_date,handle_start_date,handle_end_date,breakout_date,cup_depth_pct,handle_depth_pct,breakout_price,confidence_score
@@ -80,80 +80,79 @@ AAPL,2020-03-15,2020-05-10,2020-03-15,2020-04-20,2020-04-21,2020-05-05,2020-05-1
 MSFT,2020-02-20,2020-04-15,2020-02-20,2020-03-25,2020-03-26,2020-04-10,2020-04-15,25.3,6.5,175.80,0.88
 ```
 
-## 🎯 Reglas de Detección
+## 🎯 Detection Rules
 
-### Parámetros de la Taza
+### Cup Parameters
 
-- **Duración**: 7-65 días
-- **Profundidad**: 12-33% desde el pico inicial
-- **Forma**: Debe ser redondeada (no una V pronunciada)
-- **Picos**: Los dos picos deben ser similares (±5%)
+- **Duration**: 7-65 days
+- **Depth**: 12-33% from initial peak
+- **Shape**: Must be rounded (not a sharp V)
+- **Peaks**: Two similar peaks (±5%)
 
-### Parámetros del Asa
+### Handle Parameters
 
-- **Duración**: 5-20 días
-- **Profundidad**: Máximo 15% desde el segundo pico
-- **Posición**: Debe formarse en la mitad superior de la taza
+- **Duration**: 5-20 days
+- **Depth**: Maximum 15% from second peak
+- **Position**: Must form in upper half of cup
 
-### Confirmación de Breakout
+### Breakout Confirmation
 
-- Precio cierra por encima del nivel de resistencia (+1%)
-- Volumen en el breakout > 1.2x el promedio de 20 días
+- Price closes above resistance level (+1%)
+- Volume on breakout > 1.2x 20-day average
 
-## 📁 Estructura de Archivos
+## 📁 File Structure
 
 ```
 cup_and_handle/
-├── main.py           # Script principal ejecutable
-├── detector.py       # Lógica de detección del patrón
-├── data_fetcher.py   # Obtención de datos con yfinance
-├── utils.py          # Funciones auxiliares
-├── visualize.py      # Generación de gráficos
-├── requirements.txt  # Dependencias
-└── README.md         # Esta documentación
+├── main.py           # Main executable script
+├── detector.py       # Pattern detection logic
+├── data_fetcher.py   # Data acquisition with yfinance
+├── utils.py          # Helper functions
+├── visualize.py      # Chart generation
+├── requirements.txt  # Dependencies
+└── README.md         # This documentation
 ```
 
-## 🔬 Algoritmo Técnico
+## 🔬 Technical Algorithm
 
-1. **Detección de Extremos**: Usa `scipy.signal.argrelextrema` para encontrar picos y valles locales
-2. **Validación de Taza**: Verifica duración, profundidad, forma redondeada y similitud de picos
-3. **Identificación de Asa**: Busca consolidación descendente después del segundo pico
-4. **Confirmación**: Verifica breakout con volumen superior al promedio
-5. **Score de Confianza**: Calcula confianza basada en qué tan bien se ajusta a parámetros ideales
+1. **Extrema Detection**: Uses `scipy.signal.argrelextrema` to find local peaks and troughs
+2. **Cup Validation**: Verifies duration, depth, rounded shape, and peak similarity
+3. **Handle Identification**: Searches for downward consolidation after second peak
+4. **Confirmation**: Verifies breakout with above-average volume
+5. **Confidence Score**: Calculates confidence based on fit to ideal parameters
 
-## 📈 Visualizaciones
+## 📈 Visualizations
 
-Si se activa la opción `--visualize`, se generan:
+If the `--visualize` option is enabled, the script generates:
 
-1. **Gráficos individuales**: Candlestick charts con anotaciones de cada fase del patrón
-2. **Gráfico de resumen**: Estadísticas agregadas de todos los patrones detectados
+1. **Individual charts**: Candlestick charts with annotations for each pattern phase
+2. **Summary chart**: Aggregate statistics of all detected patterns
 
-## 🧪 Ejemplo de Ejecución Completa
+## 🧪 Complete Execution Example
 
 ```bash
 cd labeling/cup_and_handle
 
-# Ejecutar análisis completo con visualizaciones
+# Run complete analysis with visualizations
 python main.py --tickers 100 --visualize --max-plots 20
 
-# El script generará:
+# The script will generate:
 # - ../../data/labeled/cup_and_handle_labels.csv
-# - ../../data/visualizations/*.png (gráficos individuales)
+# - ../../data/visualizations/*.png (individual charts)
 # - ../../data/visualizations/summary_statistics.png
 ```
 
-## 📝 Notas
+## 📝 Notes
 
-- El script maneja automáticamente errores de descarga de datos
-- Las acciones sin datos o con errores se omiten sin detener la ejecución
-- El tiempo de ejecución depende del número de acciones (aprox. 0.5s por acción)
-- Para grandes cantidades de datos, considerar ejecutar en lotes
+- The script automatically handles data download errors
+- Stocks without data or with errors are skipped without stopping execution
+- Execution time depends on number of stocks (approx. 0.5s per stock)
+- For large datasets, consider running in batches
 
-## 👥 Autor
+## 👥 Author
 
-Desarrollado como parte del proyecto CS506 - Stock Market Pattern Recognition
+Developed as part of the CS506 project - Stock Market Pattern Recognition
 
-## 📄 Licencia
+## 📄 License
 
-Este código es parte de un proyecto académico para la asignatura CS506.
-
+This code is part of an academic project for CS506 course.

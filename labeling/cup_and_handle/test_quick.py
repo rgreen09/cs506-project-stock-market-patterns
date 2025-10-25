@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script de prueba rápida para verificar que el detector funciona correctamente.
-Analiza solo 3 acciones para probar la funcionalidad.
+Quick test script to verify the detector works correctly.
+Analyzes only 3 stocks to test functionality.
 """
 
 import sys
@@ -9,51 +9,50 @@ from data_fetcher import fetch_stock_data
 from detector import detect_cup_and_handle
 
 def test_detection():
-    """Prueba el detector con unas pocas acciones."""
-    print("🧪 Iniciando prueba rápida del detector...")
+    """Tests the detector with a few stocks."""
+    print("🧪 Starting quick detector test...")
     print("="*60)
     
-    # Probar con 3 acciones conocidas
+    # Test with 3 well-known stocks
     test_tickers = ['AAPL', 'MSFT', 'GOOGL']
     
     for ticker in test_tickers:
-        print(f"\n📊 Probando {ticker}...")
+        print(f"\n📊 Testing {ticker}...")
         
-        # Obtener datos
+        # Get data
         df = fetch_stock_data(ticker, period='2y')
         
         if df is None:
-            print(f"  ❌ No se pudieron obtener datos para {ticker}")
+            print(f"  ❌ Could not obtain data for {ticker}")
             continue
         
-        print(f"  ✅ Datos obtenidos: {len(df)} días")
+        print(f"  ✅ Data obtained: {len(df)} days")
         
-        # Detectar patrones
+        # Detect patterns
         patterns = detect_cup_and_handle(ticker, df)
         
         if patterns:
-            print(f"  ✅ Patrones detectados: {len(patterns)}")
+            print(f"  ✅ Patterns detected: {len(patterns)}")
             for i, pattern in enumerate(patterns, 1):
-                print(f"    Patrón {i}:")
-                print(f"      - Fecha: {pattern['pattern_start_date']} → {pattern['breakout_date']}")
+                print(f"    Pattern {i}:")
+                print(f"      - Date: {pattern['pattern_start_date']} → {pattern['breakout_date']}")
                 print(f"      - Cup depth: {pattern['cup_depth_pct']:.1f}%")
                 print(f"      - Handle depth: {pattern['handle_depth_pct']:.1f}%")
-                print(f"      - Confianza: {pattern['confidence_score']:.2f}")
+                print(f"      - Confidence: {pattern['confidence_score']:.2f}")
         else:
-            print(f"  ℹ️  No se encontraron patrones")
+            print(f"  ℹ️  No patterns found")
     
     print("\n" + "="*60)
-    print("✅ Prueba completada exitosamente!")
-    print("\nEl detector está funcionando correctamente.")
-    print("Puedes ejecutar el análisis completo con:")
+    print("✅ Test completed successfully!")
+    print("\nThe detector is working correctly.")
+    print("You can run the full analysis with:")
     print("  python main.py --tickers 50")
 
 if __name__ == '__main__':
     try:
         test_detection()
     except Exception as e:
-        print(f"\n❌ Error durante la prueba: {e}")
+        print(f"\n❌ Error during test: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
-

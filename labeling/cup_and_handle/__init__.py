@@ -1,8 +1,8 @@
 """
 Cup and Handle Pattern Detector Module
 
-Este módulo proporciona herramientas para detectar el patrón Cup and Handle
-en datos históricos de acciones.
+This module provides tools for detecting the Cup and Handle pattern
+in historical stock data.
 """
 
 from .detector import CupAndHandleDetector, detect_cup_and_handle
@@ -20,4 +20,3 @@ __all__ = [
     'find_troughs',
     'calculate_depth_percentage'
 ]
-
