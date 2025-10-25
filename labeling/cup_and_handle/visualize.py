@@ -29,6 +29,15 @@ def plot_cup_and_handle(df, pattern, save_path=None):
     
     # Filter data for the range
     df['Date'] = pd.to_datetime(df['Date'])
+    
+    # Remove timezone info for comparison if present
+    if df['Date'].dt.tz is not None:
+        df['Date'] = df['Date'].dt.tz_localize(None)
+    if hasattr(start_date, 'tz') and start_date.tz is not None:
+        start_date = start_date.tz_localize(None)
+    if hasattr(end_date, 'tz') and end_date.tz is not None:
+        end_date = end_date.tz_localize(None)
+    
     mask = (df['Date'] >= start_date) & (df['Date'] <= end_date)
     plot_df = df.loc[mask].copy()
     
@@ -45,6 +54,18 @@ def plot_cup_and_handle(df, pattern, save_path=None):
     handle_start = pd.to_datetime(pattern['handle_start_date'])
     handle_end = pd.to_datetime(pattern['handle_end_date'])
     breakout = pd.to_datetime(pattern['breakout_date'])
+    
+    # Remove timezone for consistency
+    if hasattr(cup_start, 'tz') and cup_start.tz is not None:
+        cup_start = cup_start.tz_localize(None)
+    if hasattr(cup_end, 'tz') and cup_end.tz is not None:
+        cup_end = cup_end.tz_localize(None)
+    if hasattr(handle_start, 'tz') and handle_start.tz is not None:
+        handle_start = handle_start.tz_localize(None)
+    if hasattr(handle_end, 'tz') and handle_end.tz is not None:
+        handle_end = handle_end.tz_localize(None)
+    if hasattr(breakout, 'tz') and breakout.tz is not None:
+        breakout = breakout.tz_localize(None)
     
     # Create annotation lines
     addplot_lines = []
