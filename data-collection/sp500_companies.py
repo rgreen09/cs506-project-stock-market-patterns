@@ -1,4 +1,4 @@
-{
+sp500_companies = {
   "Nvidia": "NVDA",
   "Apple Inc.": "AAPL",
   "Microsoft": "MSFT",
