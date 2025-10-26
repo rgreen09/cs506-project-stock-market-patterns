@@ -4,9 +4,10 @@ Module for visualizing detected Cup and Handle patterns.
 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import mplfinance as mpf
+from matplotlib.patches import Rectangle
 import pandas as pd
 from datetime import datetime, timedelta
+import numpy as np
 
 
 def plot_cup_and_handle(df, pattern, save_path=None):
@@ -18,13 +19,25 @@ def plot_cup_and_handle(df, pattern, save_path=None):
         pattern: Dictionary with pattern information
         save_path: Path to save the image (None to display)
     """
-    # Extract pattern dates
-    pattern_start = pd.to_datetime(pattern['pattern_start_date'])
+    # Extract pattern dates - use cup start for better context
+    cup_start = pd.to_datetime(pattern['cup_start_date'])
     pattern_end = pd.to_datetime(pattern['breakout_date'])
     
-    # Add margin for visualization
-    margin = timedelta(days=10)
-    start_date = pattern_start - margin
+    # Remove timezone for calculations
+    if hasattr(cup_start, 'tz') and cup_start.tz is not None:
+        cup_start = cup_start.tz_localize(None)
+    if hasattr(pattern_end, 'tz') and pattern_end.tz is not None:
+        pattern_end = pattern_end.tz_localize(None)
+    
+    # Calculate total pattern duration
+    total_duration = (pattern_end - cup_start).days
+    
+    # Optimal range for clear visibility without being too wide
+    # 8 days before, pattern, 8 days after
+    margin_days = 8
+    margin = timedelta(days=margin_days)
+    
+    start_date = cup_start - margin
     end_date = pattern_end + margin
     
     # Filter data for the range
@@ -33,10 +46,6 @@ def plot_cup_and_handle(df, pattern, save_path=None):
     # Remove timezone info for comparison if present
     if df['Date'].dt.tz is not None:
         df['Date'] = df['Date'].dt.tz_localize(None)
-    if hasattr(start_date, 'tz') and start_date.tz is not None:
-        start_date = start_date.tz_localize(None)
-    if hasattr(end_date, 'tz') and end_date.tz is not None:
-        end_date = end_date.tz_localize(None)
     
     mask = (df['Date'] >= start_date) & (df['Date'] <= end_date)
     plot_df = df.loc[mask].copy()
@@ -45,94 +54,94 @@ def plot_cup_and_handle(df, pattern, save_path=None):
         print(f"⚠️  No data to visualize pattern for {pattern['ticker']}")
         return
     
-    # Prepare data for mplfinance
-    plot_df.set_index('Date', inplace=True)
+    # Debug: print data range
+    print(f"  Data range: {plot_df['Date'].min()} to {plot_df['Date'].max()} ({len(plot_df)} days)")
     
-    # Create markers for pattern phases
-    cup_start = pd.to_datetime(pattern['cup_start_date'])
-    cup_end = pd.to_datetime(pattern['cup_end_date'])
-    handle_start = pd.to_datetime(pattern['handle_start_date'])
-    handle_end = pd.to_datetime(pattern['handle_end_date'])
-    breakout = pd.to_datetime(pattern['breakout_date'])
+    # Use matplotlib directly for full control
+    num_days = len(plot_df)
+    # Sweet spot: 0.35 inches per day - visible candles, manageable width
+    width = max(18, min(35, num_days * 0.35))
     
-    # Remove timezone for consistency
-    if hasattr(cup_start, 'tz') and cup_start.tz is not None:
-        cup_start = cup_start.tz_localize(None)
-    if hasattr(cup_end, 'tz') and cup_end.tz is not None:
-        cup_end = cup_end.tz_localize(None)
-    if hasattr(handle_start, 'tz') and handle_start.tz is not None:
-        handle_start = handle_start.tz_localize(None)
-    if hasattr(handle_end, 'tz') and handle_end.tz is not None:
-        handle_end = handle_end.tz_localize(None)
-    if hasattr(breakout, 'tz') and breakout.tz is not None:
-        breakout = breakout.tz_localize(None)
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(width, 10), 
+                                     gridspec_kw={'height_ratios': [3, 1]},
+                                     sharex=True)
     
-    # Create annotation lines
-    addplot_lines = []
+    # Plot candlesticks manually with slightly wider bodies
+    for idx, row in plot_df.iterrows():
+        date = mdates.date2num(row['Date'])
+        open_price = row['Open']
+        close_price = row['Close']
+        high_price = row['High']
+        low_price = row['Low']
+        
+        # Color based on up/down day
+        color = 'green' if close_price >= open_price else 'red'
+        
+        # Draw high-low line (wick)
+        ax1.plot([date, date], [low_price, high_price], color=color, linewidth=2, alpha=0.8)
+        
+        # Draw open-close rectangle (body) - slightly wider for better visibility
+        height = abs(close_price - open_price)
+        bottom = min(open_price, close_price)
+        rect = Rectangle((date - 0.35, bottom), 0.7, height if height > 0 else 0.01,
+                        facecolor=color, edgecolor=color, alpha=0.8, linewidth=1.5)
+        ax1.add_patch(rect)
     
-    # Horizontal line for resistance level
+    # Pattern markers
+    cup_start_date = pd.to_datetime(pattern['cup_start_date'])
+    cup_end_date = pd.to_datetime(pattern['cup_end_date'])
+    breakout_date = pd.to_datetime(pattern['breakout_date'])
+    
+    # Remove timezone
+    if hasattr(cup_start_date, 'tz') and cup_start_date.tz is not None:
+        cup_start_date = cup_start_date.tz_localize(None)
+    if hasattr(cup_end_date, 'tz') and cup_end_date.tz is not None:
+        cup_end_date = cup_end_date.tz_localize(None)
+    if hasattr(breakout_date, 'tz') and breakout_date.tz is not None:
+        breakout_date = breakout_date.tz_localize(None)
+    
+    # Resistance line
     resistance_price = pattern['breakout_price'] * 0.99
-    resistance_line = [resistance_price] * len(plot_df)
-    addplot_lines.append(
-        mpf.make_addplot(resistance_line, color='red', linestyle='--', width=1.5)
-    )
+    ax1.axhline(y=resistance_price, color='red', linestyle='--', linewidth=2.5, alpha=0.7, label='Resistance')
     
-    # Configure style
-    mc = mpf.make_marketcolors(
-        up='green', down='red',
-        edge='inherit',
-        wick='inherit',
-        volume='in'
-    )
-    s = mpf.make_mpf_style(marketcolors=mc, gridstyle='--', y_on_right=False)
+    # Vertical markers
+    ax1.axvline(x=mdates.date2num(cup_start_date), color='blue', linestyle='--', linewidth=2.5, alpha=0.7)
+    ax1.axvline(x=mdates.date2num(cup_end_date), color='purple', linestyle='--', linewidth=2.5, alpha=0.7)
+    ax1.axvline(x=mdates.date2num(breakout_date), color='green', linestyle='-', linewidth=3, alpha=0.9)
     
-    # Create the chart
-    fig, axes = mpf.plot(
-        plot_df,
-        type='candle',
-        style=s,
-        title=f"{pattern['ticker']} - Cup and Handle (Confidence: {pattern['confidence_score']})",
-        ylabel='Price ($)',
-        volume=True,
-        addplot=addplot_lines if addplot_lines else None,
-        returnfig=True,
-        figsize=(14, 8)
-    )
+    # Volume bars (wider to match candles)
+    colors = ['green' if row['Close'] >= row['Open'] else 'red' for _, row in plot_df.iterrows()]
+    ax2.bar(mdates.date2num(plot_df['Date']), plot_df['Volume'], color=colors, alpha=0.7, width=0.7)
     
-    # Add text annotations
-    ax = axes[0]
+    # Formatting
+    ax1.set_title(f"{pattern['ticker']} - Cup and Handle (Confidence: {pattern['confidence_score']})", 
+                  fontsize=16, weight='bold')
+    ax1.set_ylabel('Price ($)', fontsize=12, weight='bold')
+    ax1.grid(True, alpha=0.3, linestyle='--')
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
+    ax1.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, num_days // 15)))
     
-    # Annotate phases
-    y_pos = plot_df['High'].max() * 1.05
+    ax2.set_ylabel('Volume', fontsize=12, weight='bold')
+    ax2.set_xlabel('Date', fontsize=12, weight='bold')
+    ax2.grid(True, alpha=0.3, linestyle='--')
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
     
-    if cup_start in plot_df.index:
-        ax.axvline(x=cup_start, color='blue', linestyle=':', alpha=0.6, linewidth=2)
-        ax.text(cup_start, y_pos, 'Cup Start', fontsize=9, color='blue', 
-                rotation=45, ha='right')
-    
-    if cup_end in plot_df.index:
-        ax.axvline(x=cup_end, color='purple', linestyle=':', alpha=0.6, linewidth=2)
-        ax.text(cup_end, y_pos, 'Handle Start', fontsize=9, color='purple',
-                rotation=45, ha='right')
-    
-    if breakout in plot_df.index:
-        ax.axvline(x=breakout, color='green', linestyle='-', alpha=0.8, linewidth=2)
-        ax.text(breakout, y_pos, 'Breakout', fontsize=10, color='green',
-                rotation=45, ha='right', weight='bold')
-    
-    # Additional information
+    # Info box
     info_text = (
         f"Cup Depth: {pattern['cup_depth_pct']:.1f}%\n"
         f"Handle Depth: {pattern['handle_depth_pct']:.1f}%\n"
         f"Breakout Price: ${pattern['breakout_price']:.2f}"
     )
-    ax.text(
-        0.02, 0.98, info_text,
-        transform=ax.transAxes,
-        fontsize=10,
-        verticalalignment='top',
-        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    )
+    ax1.text(0.02, 0.98, info_text, transform=ax1.transAxes, fontsize=12,
+             verticalalignment='top', weight='bold',
+             bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8, edgecolor='black', linewidth=2))
+    
+    # Add breakout label
+    ax1.text(0.98, 0.02, 'Breakout', transform=ax1.transAxes, fontsize=14,
+             color='green', weight='bold', ha='right', rotation=45)
+    
+    plt.xticks(rotation=45, ha='right')
+    
     
     plt.tight_layout()
     
