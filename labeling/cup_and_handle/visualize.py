@@ -54,9 +54,6 @@ def plot_cup_and_handle(df, pattern, save_path=None):
         print(f"⚠️  No data to visualize pattern for {pattern['ticker']}")
         return
     
-    # Debug: print data range
-    print(f"  Data range: {plot_df['Date'].min()} to {plot_df['Date'].max()} ({len(plot_df)} days)")
-    
     # Use matplotlib directly for full control
     num_days = len(plot_df)
     # Sweet spot: 0.35 inches per day - visible candles, manageable width
