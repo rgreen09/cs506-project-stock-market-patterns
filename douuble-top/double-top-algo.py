@@ -1,6 +1,12 @@
 # double_top_detector.py
 # Detect Double Top chart patterns in daily OHLCV data.
 # Author: CS506 Project (Raymond) — 2025-10-26
+#
+# Usage examples:
+#   python double-top-algo.py --ticker AAPL
+#   python double-top-algo.py --ticker TSLA --plot
+#   python double-top-algo.py --ticker AAPL --zoom
+#   python double-top-algo.py --ticker MSFT --plot --zoom --data-dir ../data-collection/data
 
 from __future__ import annotations
 from dataclasses import dataclass
@@ -75,10 +81,11 @@ class DoubleTop:
 # 2) Public API
 # =============================
 
-def detect_double_tops(df: pd.DataFrame, params: PatternParams, symbol: Optional[str] = None) -> List[DoubleTop]:
+def detect_double_tops(df: pd.DataFrame, params: PatternParams, symbol: Optional[str] = None, debug: bool = False) -> Tuple[List[DoubleTop], dict]:
     """
     High-level orchestrator that returns a list of confirmed DoubleTop objects.
     Expects df with columns: Open, High, Low, Close, Volume and a DatetimeIndex or a 'Date' column.
+    Returns (results, debug_counters) if debug=True, else returns (results, {})
     """
     data = ensure_ohlcv(df)
     px_close = data["Close"].astype(float)
@@ -103,34 +110,51 @@ def detect_double_tops(df: pd.DataFrame, params: PatternParams, symbol: Optional
 
     results: List[DoubleTop] = []
     n = len(data)
+    
+    # Debug counters
+    debug_counters = {
+        'total_candidates': len(candidates),
+        'passed_similarity': 0,
+        'passed_trough_depth': 0,
+        'passed_uptrend': 0,
+        'passed_confirmation': 0,
+        'passed_volume': 0,
+        'final_count': 0
+    }
 
     for (p1, p2, t_idx) in candidates:
         # Rule checks
         ok_sim, peak_diff = passes_peak_similarity(data, p1, p2, params.peak_tolerance_pct)
         if not ok_sim:
             continue
+        debug_counters['passed_similarity'] += 1
 
         ok_drop, drop1, drop2 = passes_trough_depth(data, p1, p2, t_idx, params.min_trough_drop_pct)
         if not ok_drop:
             continue
+        debug_counters['passed_trough_depth'] += 1
 
         if params.require_uptrend and not passes_uptrend(data, p1, params):
             continue
+        debug_counters['passed_uptrend'] += 1
 
         neckline = float(data["Low"].iloc[t_idx])
 
         c_idx = confirm_break(data, p2, neckline, params)
         if c_idx is None:
             continue
+        debug_counters['passed_confirmation'] += 1
 
         # Optional volume filter
         if params.use_volume_filter and "Volume" in data.columns:
             if not passes_volume(data, p1, p2, c_idx, vol_ma, params):
                 continue
+        debug_counters['passed_volume'] += 1
 
         # Build quality score
         delay = c_idx - p2
         score = quality_score(peak_diff, drop1, drop2, delay, params)
+        debug_counters['final_count'] += 1
 
         results.append(DoubleTop(
             symbol=symbol,
@@ -157,7 +181,11 @@ def detect_double_tops(df: pd.DataFrame, params: PatternParams, symbol: Optional
     # De-duplicate overlapping detections and sort
     results = deduplicate_overlaps(results, prefer_earliest=params.prefer_earlier_confirm)
     results.sort(key=lambda r: (r.confirm_date, -r.score))
-    return results
+    
+    if debug:
+        return results, debug_counters
+    else:
+        return results, {}
 
 
 def plot_double_tops(df: pd.DataFrame, patterns: List[DoubleTop], start: Optional[pd.Timestamp] = None, end: Optional[pd.Timestamp] = None, title: Optional[str] = None):
@@ -177,55 +205,167 @@ def plot_double_tops(df: pd.DataFrame, patterns: List[DoubleTop], start: Optiona
         return
 
     if _HAS_MPLFIN:
-        # Use mplfinance candlesticks; add overlays via make_addplot & annotate with matplotlib
-        apds = []
-        fig, axlist = mpf.plot(
-            view,
-            type='candle',
-            style='yahoo',
-            addplot=apds,
-            returnfig=True,
-            volume=True,
-            title=title or "Double Top Detections",
-            figsize=(12, 7)
-        )
-        price_ax = axlist[0]
+        # For better control, use plain matplotlib instead of mplfinance
+        fig, (price_ax, vol_ax) = plt.subplots(2, 1, figsize=(15, 8), sharex=True, gridspec_kw={'height_ratios':[3,1]})
+        
+        # Plot the price data
+        price_ax.plot(view.index, view['Close'], linewidth=1.5, color='black', alpha=0.8, label='Price')
+        price_ax.set_ylabel('Price')
+        price_ax.set_title(title or "Double Top Detections")
+        price_ax.grid(True, alpha=0.3)
+        
+        # Plot volume data
+        colors = ['green' if close > open else 'red' for open, close in zip(view['Open'], view['Close'])]
+        vol_ax.bar(view.index, view['Volume'], color=colors, alpha=0.6, width=0.8)
+        vol_ax.set_ylabel('Volume')
+        vol_ax.grid(True, alpha=0.3)
+        
+        # Add pattern markers
+        for pat in patterns:
+            if pat.peak1_date >= start and pat.confirm_date <= end:
+                # Add peak markers
+                price_ax.scatter(pat.peak1_date, pat.peak1, s=150, marker='o', color='red', alpha=0.9, zorder=5, edgecolors='white', linewidth=2)
+                price_ax.scatter(pat.peak2_date, pat.peak2, s=150, marker='o', color='red', alpha=0.9, zorder=5, edgecolors='white', linewidth=2)
+                
+                # Add trough marker
+                price_ax.scatter(pat.trough_date, pat.trough, s=150, marker='o', color='blue', alpha=0.9, zorder=5, edgecolors='white', linewidth=2)
+                
+                # Add confirmation marker
+                confirm_price = view.loc[pat.confirm_date, "Close"]
+                price_ax.scatter(pat.confirm_date, confirm_price, s=150, marker='o', color='black', alpha=0.9, zorder=5, edgecolors='white', linewidth=2)
+                
+                # Add neckline
+                price_ax.hlines(pat.neckline, xmin=pat.peak1_date, xmax=pat.confirm_date, 
+                              colors='blue', linestyles='dashed', linewidth=2, alpha=0.7, zorder=4)
+                
+                # Connect peaks with a line
+                price_ax.plot([pat.peak1_date, pat.peak2_date], [pat.peak1, pat.peak2], 
+                            color='red', linewidth=2, alpha=0.6, linestyle='--', zorder=3)
+        
+        # Add legend manually
+        from matplotlib.lines import Line2D
+        legend_elements = [
+            Line2D([0], [0], marker='o', color='w', markerfacecolor='red', markersize=10, label='Peak'),
+            Line2D([0], [0], marker='o', color='w', markerfacecolor='blue', markersize=10, label='Trough'),
+            Line2D([0], [0], marker='o', color='w', markerfacecolor='black', markersize=10, label='Confirm'),
+            Line2D([0], [0], color='blue', linestyle='--', alpha=0.7, label='Neckline')
+        ]
+        price_ax.legend(handles=legend_elements, loc='upper left')
+        
     else:
         # Fallback: Close line plot
-        fig, (price_ax, vol_ax) = plt.subplots(2, 1, figsize=(12, 7), sharex=True, gridspec_kw={'height_ratios':[3,1]})
-        price_ax.plot(view.index, view["Close"], linewidth=1.0)
+        fig, (price_ax, vol_ax) = plt.subplots(2, 1, figsize=(15, 8), sharex=True, gridspec_kw={'height_ratios':[3,1]})
+        price_ax.plot(view.index, view["Close"], linewidth=1.0, color='black')
         price_ax.set_ylabel("Price")
         vol_ax.bar(view.index, view["Volume"], width=0.8)
         vol_ax.set_ylabel("Volume")
         price_ax.set_title(title or "Double Top Detections")
 
-    # Overlay each pattern (only if its indices are in the selected window)
-    for pat in patterns:
-        # Limit to items within the view
-        if pat.peak1_date < start or pat.confirm_date > end:
-            continue
+        # Overlay each pattern (only if its indices are in the selected window)
+        for pat in patterns:
+            # Limit to items within the view
+            if pat.peak1_date < start or pat.confirm_date > end:
+                continue
 
-        idx = view.index
-        # Points
-        plot_point(price_ax, pat.peak1_date, pat.peak1, color='tab:red', label="Peak")
-        plot_point(price_ax, pat.peak2_date, pat.peak2, color='tab:red')
-        plot_point(price_ax, pat.trough_date, pat.trough, color='tab:blue', label="Trough")
-        plot_point(price_ax, pat.confirm_date, view.loc[pat.confirm_date, "Close"], color='black', label="Confirm")
+            # Points
+            plot_point(price_ax, pat.peak1_date, pat.peak1, color='tab:red', label="Peak")
+            plot_point(price_ax, pat.peak2_date, pat.peak2, color='tab:red')
+            plot_point(price_ax, pat.trough_date, pat.trough, color='tab:blue', label="Trough")
+            plot_point(price_ax, pat.confirm_date, view.loc[pat.confirm_date, "Close"], color='black', label="Confirm")
 
-        # Neckline (horizontal dashed)
-        x_left = pat.peak1_date
-        x_right = pat.confirm_date
-        price_ax.hlines(pat.neckline, xmin=x_left, xmax=x_right, colors='tab:blue', linestyles='dashed', linewidth=1.5)
+            # Neckline (horizontal dashed)
+            x_left = pat.peak1_date
+            x_right = pat.confirm_date
+            price_ax.hlines(pat.neckline, xmin=x_left, xmax=x_right, colors='tab:blue', linestyles='dashed', linewidth=1.5)
 
-        # Optional: connect peaks
-        price_ax.plot([pat.peak1_date, pat.peak2_date], [pat.peak1, pat.peak2], color='tab:red', linewidth=1.0, alpha=0.6)
+            # Optional: connect peaks
+            price_ax.plot([pat.peak1_date, pat.peak2_date], [pat.peak1, pat.peak2], color='tab:red', linewidth=1.0, alpha=0.6)
 
-    # Legend handling (avoid duplicates)
-    handles, labels = price_ax.get_legend_handles_labels()
-    unique = dict(zip(labels, handles))
-    if unique:
-        price_ax.legend(unique.values(), unique.keys(), loc='best')
+        # Legend handling (avoid duplicates)
+        handles, labels = price_ax.get_legend_handles_labels()
+        unique = dict(zip(labels, handles))
+        if unique:
+            price_ax.legend(unique.values(), unique.keys(), loc='best')
 
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_individual_pattern(df: pd.DataFrame, pattern: DoubleTop, window_days: int = 30):
+    """
+    Plot a single double top pattern with zoomed-in view showing surrounding context.
+    """
+    data = ensure_ohlcv(df)
+    
+    # Determine the date range for the zoomed view
+    # Start a bit before peak1 and end after confirmation
+    start_date = pattern.peak1_date - pd.Timedelta(days=window_days)
+    end_date = pattern.confirm_date + pd.Timedelta(days=window_days)
+    
+    # Filter data to the zoomed window
+    view = data.loc[(data.index >= start_date) & (data.index <= end_date)].copy()
+    
+    if view.empty:
+        return
+    
+    # Create the plot
+    fig, (price_ax, vol_ax) = plt.subplots(2, 1, figsize=(12, 6), sharex=True, gridspec_kw={'height_ratios':[3,1]})
+    
+    # Plot price line
+    price_ax.plot(view.index, view['Close'], linewidth=2, color='black', alpha=0.8, label='Price')
+    price_ax.set_ylabel('Price', fontsize=12)
+    price_ax.set_title(f'Double Top Detection - {pattern.symbol}\nPeak1: {pattern.peak1_date.date()}, Peak2: {pattern.peak2_date.date()}, Confirm: {pattern.confirm_date.date()}', fontsize=11)
+    price_ax.grid(True, alpha=0.3)
+    
+    # Add pattern markers with annotations
+    # Peak 1
+    price_ax.scatter(pattern.peak1_date, pattern.peak1, s=200, marker='o', color='red', alpha=0.9, zorder=5, edgecolors='white', linewidth=2)
+    price_ax.annotate('Peak 1', xy=(pattern.peak1_date, pattern.peak1), xytext=(10, 20), 
+                     textcoords='offset points', fontsize=10, color='red', fontweight='bold',
+                     arrowprops=dict(arrowstyle='->', color='red', lw=1.5))
+    
+    # Peak 2
+    price_ax.scatter(pattern.peak2_date, pattern.peak2, s=200, marker='o', color='red', alpha=0.9, zorder=5, edgecolors='white', linewidth=2)
+    price_ax.annotate('Peak 2', xy=(pattern.peak2_date, pattern.peak2), xytext=(10, 20), 
+                     textcoords='offset points', fontsize=10, color='red', fontweight='bold',
+                     arrowprops=dict(arrowstyle='->', color='red', lw=1.5))
+    
+    # Trough
+    price_ax.scatter(pattern.trough_date, pattern.trough, s=200, marker='o', color='blue', alpha=0.9, zorder=5, edgecolors='white', linewidth=2)
+    price_ax.annotate('Trough', xy=(pattern.trough_date, pattern.trough), xytext=(-50, -30), 
+                     textcoords='offset points', fontsize=10, color='blue', fontweight='bold',
+                     arrowprops=dict(arrowstyle='->', color='blue', lw=1.5))
+    
+    # Confirmation
+    confirm_price = data.loc[pattern.confirm_date, "Close"]
+    price_ax.scatter(pattern.confirm_date, confirm_price, s=200, marker='o', color='black', alpha=0.9, zorder=5, edgecolors='white', linewidth=2)
+    price_ax.annotate('Confirm', xy=(pattern.confirm_date, confirm_price), xytext=(10, -30), 
+                     textcoords='offset points', fontsize=10, color='black', fontweight='bold',
+                     arrowprops=dict(arrowstyle='->', color='black', lw=1.5))
+    
+    # Neckline
+    price_ax.hlines(pattern.neckline, xmin=pattern.peak1_date, xmax=pattern.confirm_date, 
+                   colors='blue', linestyles='dashed', linewidth=2, alpha=0.8, zorder=4, label='Neckline')
+    
+    # Connect peaks
+    price_ax.plot([pattern.peak1_date, pattern.peak2_date], [pattern.peak1, pattern.peak2], 
+                  color='red', linewidth=2, alpha=0.6, linestyle='--', zorder=3, label='Peak Connection')
+    
+    price_ax.legend(loc='best', fontsize=9)
+    
+    # Volume bars
+    colors = ['green' if close > open else 'red' for open, close in zip(view['Open'], view['Close'])]
+    vol_ax.bar(view.index, view['Volume'], color=colors, alpha=0.6, width=0.8)
+    vol_ax.set_ylabel('Volume', fontsize=12)
+    vol_ax.grid(True, alpha=0.3)
+    
+    # Add info box
+    info_text = (f"Peak1: ${pattern.peak1:.2f} | Peak2: ${pattern.peak2:.2f}\n"
+                 f"Trough: ${pattern.trough:.2f} | Neckline: ${pattern.neckline:.2f}\n"
+                 f"Separation: {pattern.separation_bars} days | Score: {pattern.score:.3f}")
+    price_ax.text(0.02, 0.98, info_text, transform=price_ax.transAxes, fontsize=9,
+                 verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+    
     plt.tight_layout()
     plt.show()
 
@@ -298,28 +438,32 @@ def pair_peaks_with_troughs(
     params: PatternParams
 ) -> List[Tuple[int, int, int]]:
     """
-    Iterate consecutive peaks and locate the lowest Low (trough) between them.
+    Check ALL pairs of peaks, not just consecutive ones, to catch double tops
+    that span multiple intermediate peaks. Locate the lowest Low (trough) between them.
     Enforce separation constraints. Return list of (p1, p2, trough_idx).
     """
     pairs: List[Tuple[int, int, int]] = []
     n = len(data)
 
-    for i in range(len(peak_idx) - 1):
+    # Check all pairs, not just consecutive ones
+    for i in range(len(peak_idx)):
         p1 = int(peak_idx[i])
-        p2 = int(peak_idx[i + 1])
+        
+        for j in range(i + 1, len(peak_idx)):
+            p2 = int(peak_idx[j])
 
-        sep = p2 - p1
-        if sep < params.min_sep or sep > params.max_sep:
-            continue
+            sep = p2 - p1
+            if sep < params.min_sep or sep > params.max_sep:
+                continue
 
-        # Trough is the index of the minimum low between p1 and p2
-        if p1 + 1 >= p2:
-            continue
-        mid_slice = slice(p1 + 1, p2)
-        t_local = np.argmin(low_vals[mid_slice]) + (p1 + 1)
-        trough_idx = int(t_local)
+            # Trough is the index of the minimum low between p1 and p2
+            if p1 + 1 >= p2:
+                continue
+            mid_slice = slice(p1 + 1, p2)
+            t_local = np.argmin(low_vals[mid_slice]) + (p1 + 1)
+            trough_idx = int(t_local)
 
-        pairs.append((p1, p2, trough_idx))
+            pairs.append((p1, p2, trough_idx))
 
     return pairs
 
@@ -509,66 +653,117 @@ def patterns_to_dataframe(patterns: List[DoubleTop]) -> pd.DataFrame:
 # =============================
 
 if __name__ == "__main__":
-    # Minimal demo with a CSV (expects columns: Date, Open, High, Low, Close, Volume)
+    # Run double top detection on real stock data
     import argparse
+    import os
 
     parser = argparse.ArgumentParser(description="Detect Double Tops in daily OHLCV data.")
-    parser.add_argument("--csv", type=str, required=False, help="Path to CSV with OHLCV data.")
-    parser.add_argument("--symbol", type=str, default=None, help="Optional symbol name.")
+    parser.add_argument("--ticker", type=str, required=True, help="Stock ticker symbol (e.g., AAPL, MSFT, TSLA)")
     parser.add_argument("--plot", action="store_true", help="Show a visualization.")
+    parser.add_argument("--zoom", action="store_true", help="Show zoomed-in plots for each detected pattern.")
+    parser.add_argument("--debug", action="store_true", help="Show debug statistics about filtering.")
+    parser.add_argument("--data-dir", type=str, default="data-collection/data", help="Path to data directory.")
     args = parser.parse_args()
 
-    # Example: if no CSV provided, create a tiny synthetic example (for structure sanity, not real detection)
-    if not args.csv:
-        print("No CSV provided; creating a tiny synthetic dataset just to show the API.")
-        dates = pd.date_range("2022-01-01", periods=80, freq="B")
-        rng = np.random.default_rng(42)
-        base = np.linspace(100, 120, len(dates)) + rng.normal(0, 0.5, len(dates))
-        # Add synthetic double-top-ish bump
-        base[25] += 8.0
-        base[35] += 8.1
-        highs = base + rng.normal(0.6, 0.3, len(dates))
-        lows = base - rng.normal(0.6, 0.3, len(dates))
-        opens = base + rng.normal(0, 0.2, len(dates))
-        closes = base + rng.normal(0, 0.2, len(dates))
-        vols = rng.integers(1_000_000, 2_000_000, len(dates))
-        demo = pd.DataFrame({
-            "Date": dates,
-            "Open": opens,
-            "High": highs,
-            "Low": lows,
-            "Close": closes,
-            "Volume": vols
-        })
-        df_in = demo
-        symbol = args.symbol or "SYNTH"
-    else:
-        df_in = pd.read_csv(args.csv, parse_dates=["Date"])
-        symbol = args.symbol
+    # Construct the CSV file path
+    csv_path = os.path.join(args.data_dir, f"{args.ticker}_daily_10y.csv")
+    
+    if not os.path.exists(csv_path):
+        print(f"Error: Data file not found: {csv_path}")
+        print("Available tickers:")
+        data_dir = args.data_dir
+        if os.path.exists(data_dir):
+            files = [f for f in os.listdir(data_dir) if f.endswith('_daily_10y.csv')]
+            tickers = [f.replace('_daily_10y.csv', '') for f in files]
+            print(", ".join(sorted(tickers)))
+        exit(1)
+
+    # Load the data
+    print(f"Loading data for {args.ticker} from {csv_path}")
+    df_in = pd.read_csv(csv_path, parse_dates=["date"])
+    
+    # Rename columns to match expected format (lowercase to titlecase)
+    df_in = df_in.rename(columns={
+        'date': 'Date',
+        'open': 'Open', 
+        'high': 'High',
+        'low': 'Low',
+        'close': 'Close',
+        'volume': 'Volume'
+    })
+    
+    symbol = args.ticker
+    print(f"Loaded {len(df_in)} days of data for {symbol}")
+    print(f"Date range: {df_in['Date'].min()} to {df_in['Date'].max()}")
 
     params = PatternParams(
         lookback_extrema=3,
         ema_span=3,
         min_sep=5,
-        max_sep=40,
-        peak_tolerance_pct=2.0,
-        min_trough_drop_pct=3.0,
-        confirm_lookahead=15,
-        break_margin_pct=0.5,
-        use_volume_filter=True,
+        max_sep=60,  # Increased from 40 to allow more time between peaks
+        peak_tolerance_pct=5.0,  # Increased from 2.0% to 5.0% - peaks can be more different
+        min_trough_drop_pct=2.0,  # Decreased from 3.0% to 2.0% - allow smaller drops
+        confirm_lookahead=30,  # Increased from 15 to 30 days - give more time for confirmation
+        break_margin_pct=1.0,  # Increased from 0.5% to 1.0% - more lenient break requirement
+        use_volume_filter=False,  # Disabled for more detections
         vol_ma_window=20,
         vol_confirm_mult=1.2,
-        require_uptrend=True,
+        require_uptrend=False,  # Disabled uptrend requirement for more detections
         uptrend_lookback=20,
         uptrend_min_return_pct=5.0,
-        require_vol_divergence=False,   # set True to enforce vol at peak1 > peak2
+        require_vol_divergence=False,
     )
 
-    detections = detect_double_tops(df_in, params, symbol=symbol)
+    print(f"\nRunning double top detection for {symbol}...")
+    detections, debug_info = detect_double_tops(df_in, params, symbol=symbol, debug=args.debug)
     out_df = patterns_to_dataframe(detections)
-    print(out_df.head(20))
+    
+    # Print debug statistics if requested
+    if args.debug and debug_info:
+        print(f"\n=== DEBUG: Filtering Statistics ===")
+        print(f"Total candidate pairs: {debug_info['total_candidates']}")
+        print(f"Passed peak similarity (within {params.peak_tolerance_pct}%): {debug_info['passed_similarity']}")
+        print(f"Passed trough depth (min {params.min_trough_drop_pct}% drop): {debug_info['passed_trough_depth']}")
+        print(f"Passed uptrend requirement: {debug_info['passed_uptrend']}")
+        print(f"Passed confirmation break: {debug_info['passed_confirmation']}")
+        print(f"Passed volume filter: {debug_info['passed_volume']}")
+        print(f"Final validated patterns: {debug_info['final_count']}")
+        print(f"\nBiggest filtering stages:")
+        filters = [
+            ('Similarity', debug_info['total_candidates'], debug_info['passed_similarity']),
+            ('Trough Depth', debug_info['passed_similarity'], debug_info['passed_trough_depth']),
+            ('Uptrend', debug_info['passed_trough_depth'], debug_info['passed_uptrend']),
+            ('Confirmation', debug_info['passed_uptrend'], debug_info['passed_confirmation']),
+            ('Volume', debug_info['passed_confirmation'], debug_info['passed_volume'])
+        ]
+        for name, before, after in filters:
+            if before > 0:
+                pct_removed = (before - after) / before * 100
+                print(f"  {name}: {before} -> {after} (removed {pct_removed:.1f}%)")
+    
+    print(f"\n=== RESULTS ===")
     print(f"Total double tops found: {len(out_df)}")
+    
+    if len(out_df) > 0:
+        print(f"\nTop 10 detections by score:")
+        print(out_df.head(10)[['peak1_date', 'peak2_date', 'confirm_date', 'peak1', 'peak2', 'trough', 'score']].to_string(index=False))
+        
+        print(f"\nSummary statistics:")
+        print(f"Average score: {out_df['score'].mean():.3f}")
+        print(f"Average separation: {out_df['separation_bars'].mean():.1f} days")
+        print(f"Average confirmation delay: {out_df['confirm_delay_bars'].mean():.1f} days")
+    else:
+        print("No double top patterns detected with current parameters.")
+        print("Try adjusting parameters or check a different time period.")
 
     if args.plot and len(detections) > 0:
-        # Plot entire range with overlays
-        plot_double_tops(df_in, detections, title=f"Double Tops — {symbol or ''}")
+        print(f"\nGenerating full plot...")
+        plot_double_tops(df_in, detections, title=f"Double Tops — {symbol}")
+    
+    if args.zoom and len(detections) > 0:
+        print(f"\nGenerating zoomed plots for {len(detections)} detected patterns...")
+        for i, pattern in enumerate(detections, 1):
+            print(f"Showing zoomed plot {i} of {len(detections)} - Pattern from {pattern.peak1_date.date()} to {pattern.confirm_date.date()}")
+            plot_individual_pattern(df_in, pattern)
+    elif args.zoom and len(detections) == 0:
+        print("No patterns to zoom in on.")

@@ -13,6 +13,7 @@ from typing import Dict, List, Tuple, Optional
 # 🔑 ALPHA VANTAGE FREE API KEYS HERE
 # ================================================================
 API_KEYS = [
+    "6AVQ8COIP2615TOQ",
     "ZE4MEE8PVMBI6IGX",
     "IFFP8QX6DTST8M50",
     "C9BN6PB59APKSG9X",
