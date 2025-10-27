@@ -741,7 +741,7 @@ cs506-project-stock-market-patterns/
 - **Double Top**: Algorithm implemented (ready for labeling)
 - **Triangle**: 36 patterns detected, Random Forest model attempted (overfitting due to limited data)
 - **Intraday Explorations**: Infrastructure in place
-- **Flags and Pennants **: Preliminary runs on S&P-500 subset show patterns
+- **Flags and Pennants**: Preliminary runs on S&P-500 subset show patterns
 
   
 ### Visualizations Generated
