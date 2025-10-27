@@ -17,6 +17,16 @@ This module implements an algorithmic labeling system to identify the "Cup and H
 pip install -r requirements.txt
 ```
 
+## 🧪 Quick Test
+
+Before running a full analysis, you can verify the installation with a quick test:
+
+```bash
+python test_quick.py
+```
+
+This will analyze only 3 stocks (AAPL, MSFT, GOOGL) over 2 years to confirm everything works correctly. Takes ~1-2 minutes.
+
 ## 🚀 Usage
 
 ### Basic Usage
@@ -128,6 +138,24 @@ If the `--visualize` option is enabled, the script generates:
 1. **Individual charts**: Candlestick charts with annotations for each pattern phase
 2. **Summary chart**: Aggregate statistics of all detected patterns
 
+## 📊 Current Dataset
+
+**Generated Data** (already available in repository):
+
+| Metric | Value |
+|--------|-------|
+| **Output file** | `../../data/labeled/cup_and_handle_labels.csv` |
+| **Total patterns** | 178 detected patterns |
+| **Stocks analyzed** | 50 S&P 500 companies |
+| **Time range** | 2015-2025 (10 years) |
+| **Visualizations** | 5 example charts in `../../data/visualizations/` |
+
+**Dataset Statistics**:
+- Average confidence score: 0.82
+- Cup depth: 12-33% (mean: ~17%)
+- Handle depth: 1-15% (mean: ~6%)
+- Top stocks: AMD (27 patterns), NFLX (24), NVDA (13)
+
 ## 🧪 Complete Execution Example
 
 ```bash
@@ -141,6 +169,35 @@ python main.py --tickers 100 --visualize --max-plots 20
 # - ../../data/visualizations/*.png (individual charts)
 # - ../../data/visualizations/summary_statistics.png
 ```
+
+## 🔧 Common Issues
+
+**If you get import errors**:
+```bash
+pip install -r requirements.txt
+```
+
+**If no patterns are detected**:
+- Try different time period: `--period 5y` or `--period 15y`
+- Check internet connection (yfinance requires API access)
+
+**If execution is too slow**:
+- Reduce number of tickers: `--tickers 10`
+- yfinance has a delay between requests to avoid rate limiting
+
+## ⚙️ Customizing Detection
+
+To modify detection sensitivity, edit parameters in `detector.py` (lines 22-32):
+
+```python
+min_cup_depth=12,       # Minimum cup decline %
+max_cup_depth=33,       # Maximum cup decline %
+min_handle_duration=5,  # Minimum handle days
+max_handle_duration=20, # Maximum handle days
+extrema_order=5         # Peak detection sensitivity
+```
+
+Increase `extrema_order` (e.g., to 7) for smoother peak detection and fewer false positives.
 
 ## 📝 Notes
 
