@@ -169,4 +169,34 @@ This testing plan ensures our models are **evaluated fairly, generalize well acr
 
 ---
 
+## 7. Implemented Patterns (Algorithmic Labeling)
+
+### Cup and Handle Pattern
+
+The **Cup and Handle** pattern detector has been implemented as part of the algorithmic labeling phase.
+
+**Location**: `labeling/cup_and_handle/`
+
+**Description**: A bullish continuation pattern that consists of a rounded bottom (cup) followed by a smaller consolidation (handle) and a breakout.
+
+**Key Features**:
+- Automated detection using rule-based algorithms
+- Configurable parameters for cup depth, duration, and handle characteristics
+- Exports labeled data to CSV format
+- Optional visualization of detected patterns
+- Comprehensive confidence scoring
+
+**Usage**:
+```bash
+cd labeling/cup_and_handle
+pip install -r requirements.txt
+python main.py --tickers 50 --visualize
+```
+
+**Output**: Labeled patterns saved to `data/labeled/cup_and_handle_labels.csv`
+
+For detailed documentation, see [`labeling/cup_and_handle/README.md`](labeling/cup_and_handle/README.md)
+
+---
+
 ---
