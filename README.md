@@ -193,13 +193,13 @@ We engineered **16 features** for each triangle pattern:
 #### Results
 
 **Training Performance (29 samples)**:
-- Accuracy: **100%** ⚠️ (sign of overfitting)
+- Accuracy: **100%**  (sign of overfitting)
 - F1-Score: **1.000**
 - ROC-AUC: **1.000**
 - Confusion Matrix: Perfect classification on all 29 training samples
 
 **Test Performance (7 samples)**:
-- Accuracy: **43%** ❌
+- Accuracy: **43%** 
 - F1-Score: **0.500**
 - ROC-AUC: **0.500** (no better than random)
 - Precision (class 1): 0.40
@@ -208,7 +208,7 @@ We engineered **16 features** for each triangle pattern:
 
 #### Analysis: Why the Model Failed
 
-The Random Forest achieved **perfect training performance but 43% test accuracy**—a textbook case of overfitting. Key insights:
+The Random Forest achieved **perfect training performance but 43% test accuracy**,a textbook case of overfitting. Key insights:
 
 **Root Cause**: **Insufficient data** - Only 36 total patterns resulted in:
 - 29 training samples (too small for a complex Random Forest with 16 features)
@@ -243,11 +243,11 @@ This preliminary model validates our decision to pursue **intraday data collecti
 - Better feature granularity for time-series models
 - Sufficient data for train/validation/test splits (e.g., 80/10/10)
 
-This experience with Triangle patterns directly demonstrates why **limited data leads to poor model generalization**, confirming that robust ML-based pattern recognition requires significantly larger labeled datasets—achievable only through intraday data collection.
+This experience with Triangle patterns directly demonstrates why **limited data leads to poor model generalization**, confirming that robust ML-based pattern recognition requires significantly larger labeled datasets achievable only through intraday data collection.
 
 ---
 
-## 🎯 Pattern Detection - Cup and Handle (Primary)
+##  Pattern Detection - Cup and Handle 
 
 ### Overview
 
@@ -395,7 +395,7 @@ NVDA,2015-12-16,2016-03-18,2015-12-16,2016-03-02,2016-03-02,2016-03-10,2016-03-1
 
 ---
 
-## 📉 Pattern Detection - Double Top (Secondary)
+## Pattern Detection - Double Top 
 
 ### Overview
 
@@ -741,7 +741,9 @@ cs506-project-stock-market-patterns/
 - **Double Top**: Algorithm implemented (ready for labeling)
 - **Triangle**: 36 patterns detected, Random Forest model attempted (overfitting due to limited data)
 - **Intraday Explorations**: Infrastructure in place
+- **Flags and Pennants **: Preliminary runs on S&P-500 subset show patterns
 
+  
 ### Visualizations Generated
 - **Stock Analysis**: 8 comprehensive charts
 - **Pattern Examples**: 5 Cup and Handle visualizations
