@@ -39,7 +39,7 @@ python main.py --tickers 50
 python main.py --tickers 100
 
 # Specify custom output file
-python main.py --tickers 50 --output ../../data/labeled/my_patterns.csv
+python main.py --tickers 50 --output ../../../data/labeled/my_patterns.csv
 ```
 
 ### With Visualizations
@@ -49,7 +49,7 @@ python main.py --tickers 50 --output ../../data/labeled/my_patterns.csv
 python main.py --tickers 50 --visualize --max-plots 15
 
 # Specify visualization directory
-python main.py --tickers 100 --visualize --viz-dir ../../data/my_charts
+python main.py --tickers 100 --visualize --viz-dir ../../../data/my_charts
 ```
 
 ### Available Options
@@ -57,10 +57,10 @@ python main.py --tickers 100 --visualize --viz-dir ../../data/my_charts
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--tickers` | Number of stocks to analyze | 50 |
-| `--output` | Output CSV file path | `../../data/labeled/cup_and_handle_labels.csv` |
+| `--output` | Output CSV file path | `../../../data/labeled/cup_and_handle_labels.csv` |
 | `--visualize` | Generate pattern charts | False |
 | `--max-plots` | Maximum number of charts | 10 |
-| `--viz-dir` | Directory for visualizations | `../../data/visualizations` |
+| `--viz-dir` | Directory for visualizations | `../../../data/visualizations` |
 | `--period` | Historical data period | 10y |
 
 ## 📊 Output Format
@@ -144,11 +144,11 @@ If the `--visualize` option is enabled, the script generates:
 
 | Metric | Value |
 |--------|-------|
-| **Output file** | `../../data/labeled/cup_and_handle_labels.csv` |
+| **Output file** | `../../../data/labeled/cup_and_handle_labels.csv` |
 | **Total patterns** | 178 detected patterns |
 | **Stocks analyzed** | 50 S&P 500 companies |
 | **Time range** | 2015-2025 (10 years) |
-| **Visualizations** | 5 example charts in `../../data/visualizations/` |
+| **Visualizations** | 5 example charts in `../../../data/visualizations/` |
 
 **Dataset Statistics**:
 - Average confidence score: 0.82
@@ -165,9 +165,9 @@ cd labeling/cup_and_handle
 python main.py --tickers 100 --visualize --max-plots 20
 
 # The script will generate:
-# - ../../data/labeled/cup_and_handle_labels.csv
-# - ../../data/visualizations/*.png (individual charts)
-# - ../../data/visualizations/summary_statistics.png
+# - ../../../data/labeled/cup_and_handle_labels.csv
+# - ../../../data/visualizations/*.png (individual charts)
+# - ../../../data/visualizations/summary_statistics.png
 ```
 
 ## 🔧 Common Issues

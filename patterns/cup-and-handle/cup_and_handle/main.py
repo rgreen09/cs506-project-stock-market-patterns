@@ -3,7 +3,7 @@
 Main script to detect Cup and Handle patterns in S&P 500 stocks.
 
 Usage:
-    python main.py --tickers 50 --output ../../data/labeled/cup_and_handle_labels.csv
+    python main.py --tickers 50 --output ../../../data/labeled/cup_and_handle_labels.csv
     python main.py --tickers 100 --visualize --max-plots 15
 """
 
@@ -34,7 +34,7 @@ def parse_arguments():
     parser.add_argument(
         '--output',
         type=str,
-        default='../../data/labeled/cup_and_handle_labels.csv',
+        default='../../../data/labeled/cup_and_handle_labels.csv',
         help='Output CSV file path'
     )
     
@@ -54,7 +54,7 @@ def parse_arguments():
     parser.add_argument(
         '--viz-dir',
         type=str,
-        default='../../data/visualizations',
+        default='../../../data/visualizations',
         help='Directory to save visualizations'
     )
     

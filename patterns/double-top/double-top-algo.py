@@ -1,12 +1,11 @@
 # double_top_detector.py
 # Detect Double Top chart patterns in daily OHLCV data.
-# Author: CS506 Project (Raymond) — 2025-10-26
 #
 # Usage examples:
 #   python double-top-algo.py --ticker AAPL
 #   python double-top-algo.py --ticker TSLA --plot
 #   python double-top-algo.py --ticker AAPL --zoom
-#   python double-top-algo.py --ticker MSFT --plot --zoom --data-dir ../data-collection/data
+#   python double-top-algo.py --ticker MSFT --plot --zoom --data-dir <path-to-data>
 
 from __future__ import annotations
 from dataclasses import dataclass
@@ -662,9 +661,17 @@ if __name__ == "__main__":
     parser.add_argument("--plot", action="store_true", help="Show a visualization.")
     parser.add_argument("--zoom", action="store_true", help="Show zoomed-in plots for each detected pattern.")
     parser.add_argument("--debug", action="store_true", help="Show debug statistics about filtering.")
-    parser.add_argument("--data-dir", type=str, default="data-collection/data", help="Path to data directory.")
+    parser.add_argument("--data-dir", type=str, default=None, help="Path to data directory.")
     args = parser.parse_args()
 
+    # If no data-dir specified, use default relative to script location
+    if args.data_dir is None:
+        # Get the directory where this script is located
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # Go up to project root, then to data-collection/data
+        project_root = os.path.dirname(os.path.dirname(script_dir))
+        args.data_dir = os.path.join(project_root, "data-collection", "data")
+    
     # Construct the CSV file path
     csv_path = os.path.join(args.data_dir, f"{args.ticker}_daily_10y.csv")
     
