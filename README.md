@@ -17,15 +17,16 @@ The **primary goal** of this project is to create a machine learning model that 
 ### Completed Objectives:
 
 1. **✅ Data Collection**: Acquired 10 years of daily OHLCV data for 24 major stocks from the S&P 500
-2. **✅ Algorithmic Labeling**: Developed rule-based systems to automatically identify and label Cup and Handle patterns and Double Top patterns
+2. **✅ Algorithmic Labeling**: Developed rule-based systems to automatically identify and label Cup and Handle patterns, Double Top patterns, and Triangle patterns
 3. **✅ Data Processing**: Implemented stock split detection and adjustment, feature engineering, and comprehensive visualizations
-4. **✅ Preliminary Results**: Successfully detected 178 Cup and Handle patterns with an average confidence score of 0.82
+4. **✅ Preliminary ML Model**: Trained Random Forest classifier on Triangle patterns as proof-of-concept
+5. **✅ Preliminary Results**: Successfully detected 178 Cup and Handle patterns with an average confidence score of 0.82
 
-### In Progress:
+### Current Challenges & Next Steps:
 
-1. **🔄 Intraday Data Exploration**: Collecting minute-level data to expand dataset (daily patterns are limited)
-2. **🔄 Machine Learning Models**: Plan to train predictive models on the labeled dataset
-3. **🔄 Additional Patterns**: Expanding detection to Flags/Pennants and Triangle patterns
+1. **⚠️ Limited Data**: Daily patterns (36-178 samples) insufficient for robust ML models—demonstrated by Random Forest overfitting
+2. **🔄 Intraday Data Exploration**: Collecting minute-level data to expand dataset to 500+ patterns
+3. **🔄 Additional Patterns**: Expanding detection to Flags/Pennants patterns
 
 ---
 
@@ -121,6 +122,128 @@ We generated 9 comprehensive visualizations to understand the dataset:
 2. **Strong Returns**: NVDA (1,940%), AMD (450%), TSLA (385%)
 3. **High Correlation**: Technology stocks (AAPL, MSFT, GOOGL) show correlations >0.75
 4. **Split-Adjusted Continuity**: Price charts show smooth trends without artificial gaps
+
+---
+
+## 🧪 Preliminary Modeling Results
+
+### Random Forest Model on Triangle Patterns
+
+As a proof-of-concept for our machine learning approach, we trained a **Random Forest classifier** to predict breakout direction from triangle consolidation patterns. This serves as an important preliminary experiment demonstrating both the potential and limitations of ML-based pattern recognition.
+
+#### Dataset Construction
+
+We detected **36 triangle patterns** across 10 stocks over the 10-year period (2015-2025) using a rule-based approach:
+
+- **Detection Algorithm**: Linear regression on converging trendlines
+  - Upper trendline: Slope analysis on local highs
+  - Lower trendline: Slope analysis on local lows
+  - Pattern types: Symmetrical, Ascending, Descending
+- **Breakout Classification**: Bullish, Bearish, Neutral based on price action
+- **Target Variable**: Future returns over 15-day horizon
+  - Positive class (1): Return > +3%
+  - Negative class (0): Return < -3%
+
+#### Feature Engineering
+
+We engineered **16 features** for each triangle pattern:
+
+**Technical Indicators**:
+- `rsi_14`: RSI momentum indicator (14-day)
+- `macd` & `macd_signal`: MACD trend-following momentum
+- `ema_diff`: EMA 20 vs EMA 50 crossover difference
+- `bb_high` & `bb_low`: Bollinger Band boundaries
+
+**Volatility Metrics**:
+- `vol_5d`: 5-day rolling standard deviation of returns
+- `vol_10d`: 10-day rolling standard deviation of returns
+
+**Returns**:
+- `ret_1d`: 1-day return
+- `ret_5d`: 5-day return
+
+**Pattern-Specific Features**:
+- `tri_corr`: Correlation between upper and lower trendlines
+- `tri_volratio`: Volume compression ratio (declining volume confirms pattern)
+- `tri_slope_high`: Upper trendline slope
+- `tri_slope_low`: Lower trendline slope
+
+#### Model Architecture
+
+**Random Forest Classifier** with parameter search:
+
+```python
+- n_estimators: [300, 500, 700]
+- max_depth: [None, 6, 10, 15]
+- min_samples_split: [2, 5, 10]
+- min_samples_leaf: [1, 2, 4]
+- max_features: ["sqrt", "log2", 0.5]
+```
+
+**Preprocessing Pipeline**:
+- Imputation with median (numeric) and most frequent (categorical)
+- Standard scaling for numeric features
+- One-hot encoding for categorical features (pattern type, breakout hint)
+
+**Training Configuration**:
+- Time-based split: 80% training (29 samples), 20% test (7 samples)
+- Cross-validation: GroupKFold (by stock symbol) to prevent data leakage
+- Probability calibration: Isotonic calibration for better probability estimates
+
+#### Results
+
+**Training Performance (29 samples)**:
+- Accuracy: **100%** ⚠️ (sign of overfitting)
+- F1-Score: **1.000**
+- ROC-AUC: **1.000**
+- Confusion Matrix: Perfect classification on all 29 training samples
+
+**Test Performance (7 samples)**:
+- Accuracy: **43%** ❌
+- F1-Score: **0.500**
+- ROC-AUC: **0.500** (no better than random)
+- Precision (class 1): 0.40
+- Recall (class 1): 0.67
+- Confusion Matrix: 1 TP, 1 TN, 3 FP, 2 FN
+
+#### Analysis: Why the Model Failed
+
+The Random Forest achieved **perfect training performance but 43% test accuracy**—a textbook case of overfitting. Key insights:
+
+**Root Cause**: **Insufficient data** - Only 36 total patterns resulted in:
+- 29 training samples (too small for a complex Random Forest with 16 features)
+- 7 test samples (statistically unreliable)
+- Feature-to-sample ratio of ~2:1 (high risk of memorization)
+
+**SHAP Feature Importance Analysis** revealed the model's decision logic:
+
+| Feature | Importance | Interpretation |
+|---------|-----------|----------------|
+| `ema_diff` | 0.115 | EMA crossover signals were most predictive |
+| `vol_5d` | 0.086 | Short-term volatility indicators |
+| `tri_slope_low` | 0.069 | Lower trendline characteristics |
+| `vol_10d` | 0.063 | Medium-term volatility |
+| `ret_5d` | 0.022 | Recent return patterns |
+
+**Key Insight**: The model learned to memorize training patterns rather than generalize to new data. This is evident from:
+1. Perfect training F1 (1.0) with any random train split
+2. Poor test performance (43% accuracy, equivalent to random guessing)
+3. Test set too small (7 samples) to draw statistically valid conclusions
+
+#### Critical Lesson for Final Project
+
+This preliminary model validates our decision to pursue **intraday data collection**:
+
+- **Current dataset**: 36 patterns across 10 years = **3.6 patterns/stock/year**
+- **Intraday dataset (projected)**: ~500+ patterns with 10 stocks = **50 patterns/stock/year**
+
+**Expected improvement**: 
+- Intraday data provides **10-15× more training examples**
+- More frequent pattern detection (hours vs. days to form)
+- Better feature granularity for time-series models
+- Sufficient data for train/validation/test splits (e.g., 80/10/10)
+
+This experience with Triangle patterns directly demonstrates why **limited data leads to poor model generalization**, confirming that robust ML-based pattern recognition requires significantly larger labeled datasets—achievable only through intraday data collection.
 
 ---
 
@@ -488,15 +611,16 @@ We've implemented the infrastructure for collecting intraday data:
 
 **Status**: Early development
 
+**Key Insight**: This experience with Triangle patterns (poor generalization despite perfect training performance) directly validates our decision to pursue intraday data collection for the final project.
+
 ### Triangle Patterns
 
 **Location**: `patterns/triangle/triangle_model.ipynb`
 
-- Exploratory work on triangle patterns (ascending, descending, symmetrical)
-- Data collection infrastructure in place
-- Detection algorithm: Not yet implemented
+- Triangle pattern detection implemented (ascending, descending, symmetrical)
+- **Status**: Completed preliminary ML model (see "Preliminary Modeling Results" section above)
 
-**Status**: Early development
+**Note**: Detailed results of the Random Forest model attempt are documented in the "🧪 Preliminary Modeling Results" section, which demonstrates the critical importance of sufficient training data for effective machine learning model generalization.
 
 ---
 
@@ -615,6 +739,7 @@ cs506-project-stock-market-patterns/
 ### Patterns Detected
 - **Cup and Handle**: 178 patterns (avg confidence: 0.82)
 - **Double Top**: Algorithm implemented (ready for labeling)
+- **Triangle**: 36 patterns detected, Random Forest model attempted (overfitting due to limited data)
 - **Intraday Explorations**: Infrastructure in place
 
 ### Visualizations Generated
