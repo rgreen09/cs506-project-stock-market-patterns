@@ -17,7 +17,7 @@ The **primary goal** of this project is to create a machine learning model that 
 ### Completed Objectives:
 
 1. **✅ Data Collection**: Acquired 10 years of daily OHLCV data for 24 major stocks from the S&P 500
-2. **✅ Algorithmic Labeling**: Developed rule-based systems to automatically identify and label Cup and Handle patterns, Double Top patterns, and Triangle patterns
+2. **✅ Algorithmic Labeling**: Developed rule-based systems to automatically identify and label Cup and Handle patterns, Double Top patterns,Flags-pennants and Triangle patterns
 3. **✅ Data Processing**: Implemented stock split detection and adjustment, feature engineering, and comprehensive visualizations
 4. **✅ Preliminary ML Model**: Trained Random Forest classifier on Triangle patterns as proof-of-concept
 5. **✅ Preliminary Results**: Successfully detected 178 Cup and Handle patterns with an average confidence score of 0.82
