@@ -1,5 +1,7 @@
 # Stock Market Pattern Recognition - Midterm Report
 
+ ## Youtube Link : https://youtu.be/tQJO-xx7wUc 
+
 ## 📊 Project Overview
 
 This project addresses a core challenge in technical analysis: the **subjective and time-intensive nature of recognizing chart patterns** in stock market data. Traders often rely on manual inspection to identify formations that may indicate either a continuation or a reversal of the current price trend. This process is not only inefficient but also highly inconsistent between analysts.
@@ -781,4 +783,3 @@ This project is part of CS506 at Boston University. The midterm report demonstra
 - **API**: Alpha Vantage for intraday data
 - **Libraries**: pandas, numpy, matplotlib, scipy, yfinance
 
-  ## Youtube Link : https://youtu.be/tQJO-xx7wUc 
