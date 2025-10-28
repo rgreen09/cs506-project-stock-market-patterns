@@ -780,3 +780,5 @@ This project is part of CS506 at Boston University. The midterm report demonstra
 - **Data Source**: Yahoo Finance via yfinance library
 - **API**: Alpha Vantage for intraday data
 - **Libraries**: pandas, numpy, matplotlib, scipy, yfinance
+
+  ## Youtube Link : https://youtu.be/tQJO-xx7wUc 
