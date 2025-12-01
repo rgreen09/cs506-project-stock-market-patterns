@@ -1,0 +1,54 @@
+# Dataset files
+*.csv
+
+# Model artifacts
+*.pkl
+
+# Visualizations
+*.png
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Logs
+*.log
+*_log.txt
+prediction_log.txt
+training_log.txt
+
+# Old files (keep src/ versions)
+Build*.py
+Train*.py
+Live_scanner.py
+Flags*.py
+Predict*.py
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
