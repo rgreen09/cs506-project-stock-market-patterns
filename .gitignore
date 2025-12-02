@@ -4,8 +4,9 @@
 # Model artifacts
 *.pkl
 
-# Visualizations
+# Visualizations (exclude all PNG except in visualizations/ folder)
 *.png
+!visualizations/*.png
 
 # Python
 __pycache__/
