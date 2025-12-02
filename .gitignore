@@ -1,5 +1,6 @@
-# Dataset files
+# Dataset files (exclude all CSV except in outputs/ folder)
 *.csv
+!outputs/*.csv
 
 # Model artifacts
 *.pkl
