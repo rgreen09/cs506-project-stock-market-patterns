@@ -22,18 +22,23 @@ Stock/
 │   ├── live_scanner.py          # Scan recent data for patterns
 │   ├── pattern_detector.py      # Pattern detection logic
 │   └── predict_backtest.py      # Backtesting predictions
+├── visualizations/              # Model performance plots
+│   ├── random_forest_feature_importance.png
+│   ├── random_forest_roc_curve.png
+│   ├── random_forest_pr_curve.png
+│   └── flags_pennants_test.png
+├── outputs/                     # Example detection results
+│   └── AAPL_detections_20251201_144210.csv
 ├── models/                      # Trained models (gitignored)
-├── data/                        # Datasets (gitignored)
-├── outputs/                     # Detection results (gitignored)
-└── visualizations/              # Generated plots (gitignored)
+└── data/                        # Datasets (gitignored)
 ```
 
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
-cd Stock
+git clone https://github.com/rgreen09/cs506-project-stock-market-patterns.git
+cd cs506-project-stock-market-patterns
 ```
 
 2. Create virtual environment:
@@ -122,6 +127,19 @@ Results are automatically saved to CSV in the outputs directory.
 - **ROC-AUC**: 0.9998
 - **Average Precision**: 0.9458
 - **Training Data**: 216,828 windows with 621 positive examples (0.29%)
+
+### Visualizations
+
+Model performance visualizations are available in the `visualizations/` directory:
+
+- **Feature Importance** (`random_forest_feature_importance.png`): Shows top 20 most influential features for pattern detection
+- **ROC Curve** (`random_forest_roc_curve.png`): Displays classifier performance with AUC=0.9998
+- **Precision-Recall Curve** (`random_forest_pr_curve.png`): Shows precision-recall tradeoff (AP=0.9458)
+- **Example Pattern** (`flags_pennants_test.png`): Visualization of detected flag/pennant pattern
+
+### Example Output
+
+See `outputs/AAPL_detections_20251201_144210.csv` for an example detection run showing 8 patterns detected from Oct 21-31, 2025 AAPL data with confidence scores ranging from 75-96%.
 
 ## Data Format
 
