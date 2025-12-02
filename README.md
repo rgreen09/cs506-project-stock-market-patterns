@@ -174,10 +174,3 @@ See `requirements.txt` for full list. Key dependencies:
 - seaborn
 - imbalanced-learn (for SMOTE)
 
-## License
-
-MIT License
-
-## Contributing
-
-Contributions welcome! Please open an issue or submit a pull request.
