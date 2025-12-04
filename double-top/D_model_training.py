@@ -37,8 +37,8 @@ import joblib
 # =============================================================================
 
 DATA_PATH = "data/combined_double_top_15m_windows.csv"
-MODELS_DIR = "double-top/machine_learning/models"
-LOG_FILE = "double-top/machine_learning/ML_log.txt"
+MODELS_DIR = "best_model"
+LOG_FILE = "best_model/ML_log.txt"
 
 RANDOM_STATE = 42
 TEST_SIZE = 0.2

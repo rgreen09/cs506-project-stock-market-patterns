@@ -5,7 +5,7 @@ A standalone module for detecting double-top patterns in price data.
 Can be tested independently and imported into other modules.
 
 Usage:
-    from double_top_detector import DoubleTopDetector
+    from A_double_top_detector import DoubleTopDetector
     
     detector = DoubleTopDetector()
     is_pattern = detector.detect(price_series)

@@ -15,8 +15,8 @@ import sys
 import os
 
 # Add double-top directory to path to import detector
-sys.path.insert(0, str(Path(__file__).parent / 'double-top'))
-from double_top_detector import DoubleTopDetector, DoubleTopConfig
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from A_double_top_detector import DoubleTopDetector, DoubleTopConfig
 
 
 def load_successful_double_tops(csv_path: str, num_examples: int = 5) -> pd.DataFrame:

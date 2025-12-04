@@ -6,16 +6,16 @@ double-top patterns using sliding 15-minute windows (300 bars at 3-second interv
 
 Usage:
     Minimal (uses defaults):
-        python build_double_top_dataset.py --symbol AAPL
+        python B_build_double_top_dataset.py --symbol AAPL
     
     Full example:
-        python build_double_top_dataset.py --input data/combined_dataset.csv --output AAPL_double_top_15m_windows.csv --symbol AAPL --window-bars 300
+        python B_build_double_top_dataset.py --input data/combined_dataset.csv --output AAPL_double_top_15m_windows.csv --symbol AAPL --window-bars 300
     
     With custom trading hours:
-        python build_double_top_dataset.py --symbol AAPL --market-open 09:30 --market-close 16:00
+        python B_build_double_top_dataset.py --symbol AAPL --market-open 09:30 --market-close 16:00
     
     Disable filtering:
-        python build_double_top_dataset.py --symbol AAPL --no-filter-trading-hours --no-filter-day-boundaries
+        python B_build_double_top_dataset.py --symbol AAPL --no-filter-trading-hours --no-filter-day-boundaries
 
 Arguments:
     --symbol (required): Stock symbol to process (e.g., AAPL, MSFT, NVDA)
@@ -45,7 +45,7 @@ except ImportError:
     HAS_TQDM = False
     print("Note: tqdm not available. Install with 'pip install tqdm' for progress bar.")
 
-from double_top_detector import (
+from A_double_top_detector import (
     is_double_top_in_window,
     DoubleTopDetector,
     DoubleTopConfig
