@@ -77,7 +77,7 @@ target/
 data/labeled/*.csv
 data/raw/
 data/processed/
-
+data/
 # Jupyter Notebook
 .ipynb_checkpoints
 *.ipynb
