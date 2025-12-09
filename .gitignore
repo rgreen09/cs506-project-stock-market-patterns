@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+data/
 ENV/
 data/
 build/
@@ -81,7 +82,6 @@ data/processed/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-*.ipynb
 
 # IDEs
 .vscode/
