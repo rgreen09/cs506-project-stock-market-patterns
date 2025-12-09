@@ -13,7 +13,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
+combined_dataset.csv
+# C extensions
 *.so
+data/
+# Distribution / packaging
 .Python
 .venv/
 venv/
