@@ -1,6 +1,6 @@
 """
 Flags and Pennants Pattern Detector
-
+ --
 A standalone module for detecting flag and pennant continuation patterns in price data.
 Can be tested independently and imported into other modules.
 
