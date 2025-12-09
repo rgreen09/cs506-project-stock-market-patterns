@@ -14,16 +14,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-# Add cup_and_handle module to path (works from multiple locations)
-_module_paths = [
-    Path(__file__).parent / "cup_and_handle",  # Local copy
-    Path(__file__).parent.parent.parent / "labeling" / "cup_and_handle",  # Original location
-]
-for _path in _module_paths:
-    if _path.exists():
-        sys.path.insert(0, str(_path))
-        break
-
+# Import from same directory
 from detector import CupAndHandleDetector
 
 

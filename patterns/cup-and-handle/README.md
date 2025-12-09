@@ -13,14 +13,18 @@ The Cup and Handle is a bullish continuation pattern consisting of:
 
 ```
 patterns/cup-and-handle/
+├── README.md                # This file
+├── requirements.txt         # Dependencies
+├── detector.py              # CupAndHandleDetector class
+├── utils.py                 # Helper functions (peaks, troughs, etc.)
+├── data_fetcher.py          # Data fetching utilities
+├── visualize.py             # Pattern visualization
+├── pattern_detector.py      # CLI for pattern detection
 ├── aggregate_to_daily.py    # Convert tick data to daily OHLCV
-├── detect_patterns.py       # Run pattern detection
+├── detect_patterns.py       # Run pattern detection on daily data
 ├── build_dataset.py         # Create training dataset with features
 ├── train_model_final.py     # Train optimized XGBoost classifier
-├── cup_and_handle/          # Core detection module
-│   ├── detector.py          # CupAndHandleDetector class
-│   ├── utils.py             # Helper functions
-│   └── visualize.py         # Pattern visualization
+├── test_quick.py            # Quick test script
 └── outputs/
     ├── daily_data.csv       # Aggregated daily OHLCV
     ├── detected_patterns.csv # Detected patterns
