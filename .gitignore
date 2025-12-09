@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Dataset files (exclude all CSV except in outputs/ folder)
 *.csv
 !outputs/*.csv
@@ -132,3 +133,7 @@ Predict*.py
 .mypy_cache/
 .dmypy.json
 dmypy.json
+=======
+data/
+venv/
+>>>>>>> jigar-new-feature
