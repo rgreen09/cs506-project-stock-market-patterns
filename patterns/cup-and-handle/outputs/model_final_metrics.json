@@ -1,0 +1,111 @@
+{
+  "metrics": {
+    "precision": 0.8103448275862069,
+    "recall": 0.7014925373134329,
+    "f1_score": 0.752,
+    "roc_auc": 0.9403632796957555,
+    "pr_auc": 0.664620193267499,
+    "cv_f1_mean": 0.9767874159809254,
+    "cv_f1_std": 0.008340050761848251,
+    "cv_precision_mean": 0.9836249749605512,
+    "cv_recall_mean": 0.9702487562189054
+  },
+  "training_config": {
+    "n_features_original": 30,
+    "n_features_selected": 20,
+    "dropped_features": [
+      "close_std",
+      "half_symmetry",
+      "num_peaks",
+      "hl_spread_second_half",
+      "price_range_pct",
+      "return_std",
+      "hl_spread_first_half",
+      "close_mean",
+      "volume_std",
+      "return_mean"
+    ],
+    "scale_pos_weight": 8.985141158989599,
+    "hyperparameters": {
+      "max_depth": 6,
+      "learning_rate": 0.05,
+      "n_estimators": 200,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "min_child_weight": 2,
+      "gamma": 0.1,
+      "reg_alpha": 0.1,
+      "reg_lambda": 1.0
+    }
+  },
+  "confusion_matrix": {
+    "TN": 1602,
+    "FP": 11,
+    "FN": 20,
+    "TP": 47
+  },
+  "feature_importance": [
+    {
+      "feature": "price_range",
+      "importance": 0.13688945770263672
+    },
+    {
+      "feature": "max_drawdown_pct",
+      "importance": 0.09535223990678787
+    },
+    {
+      "feature": "hl_spread_mean",
+      "importance": 0.08545510470867157
+    },
+    {
+      "feature": "close_max",
+      "importance": 0.07011924684047699
+    },
+    {
+      "feature": "close_min",
+      "importance": 0.06815259903669357
+    },
+    {
+      "feature": "total_return",
+      "importance": 0.06560619175434113
+    },
+    {
+      "feature": "hl_spread_std",
+      "importance": 0.06498434394598007
+    },
+    {
+      "feature": "return_skew",
+      "importance": 0.061220742762088776
+    },
+    {
+      "feature": "edge_to_center_ratio",
+      "importance": 0.053151097148656845
+    },
+    {
+      "feature": "min_position_ratio",
+      "importance": 0.045523904263973236
+    },
+    {
+      "feature": "volume_mean",
+      "importance": 0.04212554171681404
+    },
+    {
+      "feature": "slope_second_half",
+      "importance": 0.03914964199066162
+    },
+    {
+      "feature": "slope_diff",
+      "importance": 0.03787856176495552
+    },
+    {
+      "feature": "peak_price_diff_pct",
+      "importance": 0.035485267639160156
+    },
+    {
+      "feature": "slope_full",
+      "importance": 0.028399206697940826
+    }
+  ],
+  "optimal_threshold": 0.7499999999999999,
+  "training_date": "2025-12-08T20:37:33.823944"
+}

@@ -4,14 +4,26 @@ Cup and Handle pattern detector for historical price data.
 
 import numpy as np
 import pandas as pd
-from utils import (
-    find_peaks, 
-    find_troughs, 
-    calculate_depth_percentage,
-    is_rounded_bottom,
-    calculate_volume_ratio,
-    get_moving_average
-)
+try:
+    # When imported as package
+    from .utils import (
+        find_peaks, 
+        find_troughs, 
+        calculate_depth_percentage,
+        is_rounded_bottom,
+        calculate_volume_ratio,
+        get_moving_average
+    )
+except ImportError:
+    # When run directly
+    from utils import (
+        find_peaks, 
+        find_troughs, 
+        calculate_depth_percentage,
+        is_rounded_bottom,
+        calculate_volume_ratio,
+        get_moving_average
+    )
 
 
 class CupAndHandleDetector:
