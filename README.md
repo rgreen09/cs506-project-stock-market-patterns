@@ -1,5 +1,7 @@
 # Stock Market Pattern Detection & Prediction
 
+#Youtube Link : 
+
 **CS506 Final Project - Fall 2025**
 
 A machine learning pipeline for detecting and predicting technical chart patterns in stock market data. This project implements algorithmic detection and supervised learning models for five classic technical analysis patterns.
