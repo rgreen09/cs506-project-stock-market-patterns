@@ -1,6 +1,6 @@
 # Stock Market Pattern Detection & Prediction
 
-#Youtube Link : 
+# Youtube Link : 
 
 **CS506 Final Project - Fall 2025**
 
