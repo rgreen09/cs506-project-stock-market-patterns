@@ -1,0 +1,78 @@
+data:
+  input_path: "data/combined_sample_triangle.csv"
+  output_dir: "data/processed"
+  models_dir: "models"
+
+patterns:
+  double_top:
+    enabled: true
+    window_bars: 300
+    label_column: "label_double_top"
+    detector:
+      peak_tolerance: 0.04
+      min_drop_pct: 0.002
+      min_gap: 5
+      max_gap_ratio: 0.6
+      require_confirmation: false
+      smoothing_window: 7
+    training:
+      test_size: 0.2
+      models: ["random_forest", "xgboost", "lightgbm"]
+
+  flags_pennants:
+    enabled: true
+    window_bars: 300
+    label_column: "label_flags_pennants"
+    detector:
+      pole_min_move_pct: 0.015
+      consolidation_max_range_pct: 0.015
+      require_breakout: false
+    training:
+      test_size: 0.2
+      models: ["random_forest", "xgboost"]
+
+  head_and_shoulders:
+    enabled: true
+    window_bars: 300
+    label_column: "label_hs"
+    detector:
+      shoulder_tolerance: 0.04
+      min_head_height_pct: 0.02
+      require_confirmation: false
+    training:
+      test_size: 0.2
+      models: ["random_forest", "logistic_regression"]
+
+  triangle:
+    enabled: true
+    window_bars: 15
+    label_column: "label_triangle"
+    detector:
+      min_extrema: 2
+      min_slope_mag: 0.05
+      min_fraction_inside: 0.8
+    training:
+      test_size: 0.2
+      models: ["random_forest"]
+
+  cup_and_handle:
+    enabled: true
+    window_bars: 65
+    label_column: "label_cup_handle"
+    data_frequency: "daily"
+    detector:
+      min_cup_duration: 7
+      max_cup_duration: 65
+      min_cup_depth: 12
+      max_cup_depth: 33
+    training:
+      test_size: 0.2
+      models: ["random_forest", "xgboost"]
+
+symbols: ["AAPL", "MSFT", "NVDA", "SPY", "QQQ"]
+
+trading_hours:
+  market_open: "09:30"
+  market_close: "16:00"
+  filter_enabled: true
+

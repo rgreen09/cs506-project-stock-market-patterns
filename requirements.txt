@@ -16,3 +16,4 @@ imbalanced-learn>=0.11.0
 
 # Data processing
 python-dateutil>=2.8.0
+PyYAML>=6.0
