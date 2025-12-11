@@ -1,0 +1,187 @@
+======================================================================
+ROUND ONE MODELING - Double Top Pattern Detection
+Timestamp: 2025-12-04 01:46:27
+======================================================================
+
+======================================================================
+DATA LOADING AND FEATURE ENGINEERING
+======================================================================
+Loading data from data/combined_double_top_15m_windows.csv...
+Loaded 602,217 rows in 2.56 seconds
+Original columns: 34
+
+Target distribution:
+  Class 0 (No Double Top): 401,478 (66.7%)
+  Class 1 (Double Top):    200,739 (33.3%)
+
+Dropping metadata columns: ['symbol', 'start_timestamp', 'end_timestamp']
+
+Creating price-normalized features (dividing by close_mean):
+  close_std -> close_std_pct
+  slope_entire_window -> slope_entire_window_pct
+  slope_last_30 -> slope_last_30_pct
+  rolling_std_20 -> rolling_std_20_pct
+  rolling_std_60 -> rolling_std_60_pct
+  true_range_mean_20 -> true_range_mean_20_pct
+  peak1_sharpness -> peak1_sharpness_pct
+  peak2_sharpness -> peak2_sharpness_pct
+  sma_50 -> sma_50_ratio
+
+Dropping absolute value columns: 13 columns
+
+Final feature count: 26
+Features: ['price_range_pct', 'cumulative_return_window', 'ret_1', 'ret_5', 'ret_20', 'momentum_last_30', 'num_peaks_window', 'num_troughs_window', 'peak1_rel_pos', 'peak2_rel_pos', 'bars_between_last_two_peaks', 'peak_height_diff_pct', 'neckline_drop_pct', 'drawdown_from_last_peak', 'close_over_sma20', 'rsi_14', 'percent_b', 'close_std_pct', 'slope_entire_window_pct', 'slope_last_30_pct', 'rolling_std_20_pct', 'rolling_std_60_pct', 'true_range_mean_20_pct', 'peak1_sharpness_pct', 'peak2_sharpness_pct', 'sma_50_ratio']
+
+======================================================================
+TRAIN/TEST SPLIT
+======================================================================
+Test size: 0.2 (20%)
+Random state: 42
+Stratified split: Yes
+
+Training set: 481,773 samples
+Test set: 120,444 samples
+
+======================================================================
+FEATURE SCALING
+======================================================================
+Using StandardScaler (fit on training data only)
+Scaled 26 features
+Training data mean (after scaling): -0.000000
+Training data std (after scaling): 1.000000
+
+======================================================================
+MODEL TRAINING AND EVALUATION
+======================================================================
+Training set class distribution: 321,182 negative, 160,591 positive
+
+--- Random Forest ---
+Training time: 65.57 seconds
+
+Training Set Metrics:
+  Accuracy:  1.0000
+  Precision: 1.0000
+  Recall:    1.0000
+  F1 Score:  1.0000
+  ROC-AUC:   1.0000
+
+Test Set Metrics:
+  Accuracy:  0.9910
+  Precision: 0.9772
+  Recall:    0.9961
+  F1 Score:  0.9866
+  ROC-AUC:   0.9994
+
+--- XGBoost ---
+Training time: 3.03 seconds
+
+Training Set Metrics:
+  Accuracy:  0.9894
+  Precision: 0.9715
+  Recall:    0.9975
+  F1 Score:  0.9844
+  ROC-AUC:   0.9993
+
+Test Set Metrics:
+  Accuracy:  0.9872
+  Precision: 0.9665
+  Recall:    0.9961
+  F1 Score:  0.9811
+  ROC-AUC:   0.9984
+
+--- LightGBM ---
+Training time: 2.53 seconds
+
+Training Set Metrics:
+  Accuracy:  0.9831
+  Precision: 0.9573
+  Recall:    0.9937
+  F1 Score:  0.9752
+  ROC-AUC:   0.9977
+
+Test Set Metrics:
+  Accuracy:  0.9822
+  Precision: 0.9552
+  Recall:    0.9932
+  F1 Score:  0.9738
+  ROC-AUC:   0.9973
+
+--- Logistic Regression ---
+Training time: 4.38 seconds
+
+Training Set Metrics:
+  Accuracy:  0.9727
+  Precision: 0.9412
+  Recall:    0.9792
+  F1 Score:  0.9598
+  ROC-AUC:   0.9950
+
+Test Set Metrics:
+  Accuracy:  0.9731
+  Precision: 0.9418
+  Recall:    0.9797
+  F1 Score:  0.9604
+  ROC-AUC:   0.9950
+
+--- Neural Network ---
+Training time: 378.35 seconds
+
+Training Set Metrics:
+  Accuracy:  0.9942
+  Precision: 0.9876
+  Recall:    0.9951
+  F1 Score:  0.9913
+  ROC-AUC:   0.9992
+
+Test Set Metrics:
+  Accuracy:  0.9896
+  Precision: 0.9782
+  Recall:    0.9909
+  F1 Score:  0.9845
+  ROC-AUC:   0.9976
+
+======================================================================
+SAVING MODELS
+======================================================================
+Saved scaler to double-top/machine_learning/models\scaler.pkl
+Saved Random Forest to double-top/machine_learning/models\random_forest_model.pkl
+Saved XGBoost to double-top/machine_learning/models\xgboost_model.pkl
+Saved LightGBM to double-top/machine_learning/models\lightgbm_model.pkl
+Saved Logistic Regression to double-top/machine_learning/models\logistic_regression_model.pkl
+Saved Neural Network to double-top/machine_learning/models\neural_network_model.pkl
+
+======================================================================
+MODEL COMPARISON SUMMARY - TRAINING SET
+======================================================================
+Model                       Accuracy  Precision     Recall         F1    ROC-AUC
+--------------------------------------------------------------------------------
+Random Forest                 1.0000     1.0000     1.0000     1.0000     1.0000
+XGBoost                       0.9894     0.9715     0.9975     0.9844     0.9993
+LightGBM                      0.9831     0.9573     0.9937     0.9752     0.9977
+Logistic Regression           0.9727     0.9412     0.9792     0.9598     0.9950
+Neural Network                0.9942     0.9876     0.9951     0.9913     0.9992
+
+
+======================================================================
+MODEL COMPARISON SUMMARY - TEST SET
+======================================================================
+Model                       Accuracy  Precision     Recall         F1    ROC-AUC   Train(s)
+-------------------------------------------------------------------------------------------
+Random Forest                 0.9910     0.9772     0.9961     0.9866     0.9994      65.57
+XGBoost                       0.9872     0.9665     0.9961     0.9811     0.9984       3.03
+LightGBM                      0.9822     0.9552     0.9932     0.9738     0.9973       2.53
+Logistic Regression           0.9731     0.9418     0.9797     0.9604     0.9950       4.38
+Neural Network                0.9896     0.9782     0.9909     0.9845     0.9976     378.35
+
+Best model by Test F1 score: Random Forest (Test F1 = 0.9866)
+
+Overfitting Analysis (Train F1 - Test F1):
+  Random Forest                 0.0134
+  XGBoost                       0.0033
+  LightGBM                      0.0013
+  Logistic Regression          -0.0006
+  Neural Network                0.0068
+
+======================================================================
+ROUND ONE MODELING COMPLETE
+======================================================================
