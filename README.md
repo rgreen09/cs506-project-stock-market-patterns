@@ -1,6 +1,6 @@
 # Stock Market Pattern Detection & Prediction
 
-# Youtube Link : 
+# Youtube Link : https://www.youtube.com/@RaymondGreenberg-s7t
 
 **CS506 Final Project - Fall 2025**
 
