@@ -1,4 +1,5 @@
 Data Instructions:
+**warning: the dataset is large (about 2.5GB)**
 
 1. Download dataset from dropbox with this link: https://www.dropbox.com/scl/fi/ftc13nzyi1tizfeun8qnu/combined_dataset.csv?rlkey=mp2ar1cvnlsym25bppmbjbzew&st=pu2ee49y&dl=0
 2. Filepath for the dataset from the root of this project should be: data/combined_dataset.csv
