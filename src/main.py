@@ -16,10 +16,13 @@ def _enabled_patterns(cfg) -> List[str]:
 
 def _resolve_input_path(args, cfg) -> str:
     if getattr(args, "input_path", None):
-        return args.input_path
-    if getattr(args, "use_subset", False):
-        return DEFAULT_SUBSET_PATH
-    return cfg["data"]["input_path"]
+        path = args.input_path
+    elif getattr(args, "use_subset", False):
+        path = DEFAULT_SUBSET_PATH
+    else:
+        path = cfg["data"]["input_path"]
+
+    return path
 
 
 def cmd_build(args):
